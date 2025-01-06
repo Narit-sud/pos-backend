@@ -1,6 +1,6 @@
 import { pool } from "../utils/pool";
 
-export const category = {
+export const categoryService = {
     getAll: async () => {
         const client = await pool.connect();
         try {

@@ -19,6 +19,7 @@ app.use("/role", verifyToken, RoleRouter);
 app.use("/category", verifyToken, CategoryRouter);
 app.use("/product", verifyToken, ProductRouter);
 app.post("/login", userHandle.login);
+app.post("/register", userHandle.create);
 
 setInterval(async () => {
     try {

@@ -7,5 +7,3 @@ export const UserRouter = Router();
 UserRouter.get("/", verifyToken, userHandle.getAll);
 
 UserRouter.get("/:id", verifyToken, userHandle.getById);
-
-UserRouter.post("/", verifyToken, userHandle.create);
