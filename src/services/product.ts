@@ -1,7 +1,7 @@
 import { Product } from "../types/Product";
 import { pool } from "../utils/pool";
 
-export const product = {
+export const productService = {
     getAll: async () => {
         const client = await pool.connect();
         try {
