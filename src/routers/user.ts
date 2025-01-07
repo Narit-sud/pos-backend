@@ -7,3 +7,5 @@ export const UserRouter = Router();
 UserRouter.get("/", verifyToken, userHandle.getAll);
 
 UserRouter.get("/:id", verifyToken, userHandle.getById);
+
+UserRouter.patch("/:id", verifyToken, userHandle.update);

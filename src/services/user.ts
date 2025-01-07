@@ -6,8 +6,7 @@ export const userService = {
     getAll: async () => {
         const client = await pool.connect();
         try {
-            const sql =
-                "SELECT employees.id, first_name, last_name, phone_number, roles.name AS ROLE, username FROM employees JOIN roles ON employees.ROLE = roles.id";
+            const sql = "SELECT * FROM employees";
             const data = await client.query(sql);
             if (data.rowCount !== null && data.rowCount > 0) {
                 return data.rows;
@@ -25,7 +24,7 @@ export const userService = {
         const client = await pool.connect();
         try {
             const data = await client.query(
-                "SELECT employees.id, first_name, last_name, phone_number, roles.name AS ROLE, username FROM employees JOIN roles ON employees.ROLE = roles.id WHERE employees.id = $1",
+                "SELECT * FROM employees WHERE id = $1",
                 [id],
             );
             if (data.rowCount !== null && data.rowCount > 0) {
@@ -41,26 +40,19 @@ export const userService = {
     },
 
     create: async (user: User) => {
-        const {
-            first_name,
-            last_name,
-            phone_number,
-            username,
-            password,
-            role,
-        } = user;
+        const { name, surname, email, phone_number, username, password } = user;
 
         const client = await pool.connect();
         const hashedPassword = await encryptPassword(password);
 
         try {
             const sql =
-                "insert into employees (first_name, last_name, phone_number, role, username, password) values ($1, $2, $3, $4, $5, $6)";
+                "insert into employees (name , surname, email, phone_number, username, password) values ($1, $2, $3, $4, $5, $6)";
             await client.query(sql, [
-                first_name,
-                last_name,
+                name,
+                surname,
+                email,
                 phone_number,
-                role,
                 username,
                 hashedPassword,
             ]);
@@ -103,6 +95,33 @@ export const userService = {
             }
         } catch (error) {
             throw error;
+        }
+    },
+    update: async (user: User) => {
+        const { id, name, surname, email, phone_number } = user;
+
+        const client = await pool.connect();
+
+        try {
+            const sql =
+                "UPDATE employees SET name = $1, surname = $2, email = $3, phone_number = $4 WHERE id = $5";
+            console.log(sql);
+
+            const query = await client.query(sql, [
+                name,
+                surname,
+                email,
+                phone_number,
+                id,
+            ]);
+
+            console.log(query);
+
+            return true;
+        } catch (error) {
+            throw error;
+        } finally {
+            client.release();
         }
     },
 };
