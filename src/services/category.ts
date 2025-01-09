@@ -4,7 +4,7 @@ export const categoryService = {
     getAll: async () => {
         const client = await pool.connect();
         try {
-            const sql = "select * from product_categories";
+            const sql = "select id, name, detail from categories";
             const query = await client.query(sql);
             if (query.rowCount !== null && query.rowCount > 0) {
                 return query.rows;

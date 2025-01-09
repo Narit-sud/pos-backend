@@ -105,17 +105,8 @@ export const userService = {
         try {
             const sql =
                 "UPDATE employees SET name = $1, surname = $2, email = $3, phone_number = $4 WHERE id = $5";
-            console.log(sql);
 
-            const query = await client.query(sql, [
-                name,
-                surname,
-                email,
-                phone_number,
-                id,
-            ]);
-
-            console.log(query);
+            await client.query(sql, [name, surname, email, phone_number, id]);
 
             return true;
         } catch (error) {

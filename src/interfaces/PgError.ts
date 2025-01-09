@@ -9,3 +9,7 @@ export interface PgError extends Error {
     line?: string;
     routine?: string;
 }
+
+export interface CookRes extends Response {
+    cookie: string;
+}

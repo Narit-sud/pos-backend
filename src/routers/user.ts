@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { userHandle } from "../handles/user";
-import { verifyToken } from "../middlewares/verifyToken";
+import { Token } from "../utils/token";
 
 export const UserRouter = Router();
 
-UserRouter.get("/", verifyToken, userHandle.getAll);
+UserRouter.get("/", Token.verify, userHandle.getAll);
 
-UserRouter.get("/:id", verifyToken, userHandle.getById);
+UserRouter.get("/:id", Token.verify, userHandle.getById);
 
-UserRouter.patch("/:id", verifyToken, userHandle.update);
+UserRouter.patch("/:id", Token.verify, userHandle.update);

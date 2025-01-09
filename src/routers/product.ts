@@ -9,6 +9,8 @@ ProductRouter.get("/:id", productHandle.getById);
 
 ProductRouter.post("/", productHandle.create);
 
+ProductRouter.patch("/:id", productHandle.update);
+
 ProductRouter.delete("/:id", productHandle.delete);
 
 // ProductRouter.patch("/:id", );

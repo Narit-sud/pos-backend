@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { userService } from "../services/user";
 import { TrueResponse, FalseResponse } from "../utils/class";
 import { generateJWT } from "../utils/token";
+import { Token } from "../utils/token";
 
 export const userHandle = {
     getAll: async (req: Request, res: Response) => {
@@ -111,13 +112,19 @@ export const userHandle = {
             } else {
                 // if password matched
                 try {
-                    const token = await generateJWT(loginDetail.username);
-                    const response = new TrueResponse(
-                        "login success",
-                        undefined,
-                        token,
-                    );
-                    res.status(201).send(response);
+                    const token = await Token.generate(loginDetail.username);
+                    const response = new TrueResponse("login success");
+                    console.log("============================");
+
+                    res.status(200)
+                        .cookie("jwt", token, {
+                            expires: new Date(Date.now() + 60 * 60 * 24 * 1000),
+                            httpOnly: true,
+                            secure: true,
+                            sameSite: "none",
+                            // path: "/",
+                        })
+                        .send(response);
                 } catch (error) {
                     const response = new FalseResponse(
                         "unknown error occured",

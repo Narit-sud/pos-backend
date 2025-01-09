@@ -2,8 +2,8 @@ export interface Product {
     id?: number;
     name: string;
     category: number;
-    recommend_price: number;
-    current_cost: number;
-    current_stock: number;
+    price: number;
+    cost: number;
+    stock: number;
     detail: string;
 }

@@ -26,6 +26,7 @@ export const productHandle = {
     },
     getById: async (req: Request, res: Response) => {
         const { id } = req.params;
+
         try {
             const data = await productService.getById(id);
             if (data) {
@@ -62,22 +63,22 @@ export const productHandle = {
             res.send(response).status(400);
             return;
         } else if (
-            typeof newProduct.recommend_price === "undefined" ||
-            newProduct.recommend_price === ""
+            typeof newProduct.price === "undefined" ||
+            newProduct.price === ""
         ) {
             const response = new FalseResponse("product price cannot be empty");
             res.send(response).status(400);
             return;
         } else if (
-            typeof newProduct.current_cost === "undefined" ||
-            newProduct.current_cost === ""
+            typeof newProduct.cost === "undefined" ||
+            newProduct.cost === ""
         ) {
             const response = new FalseResponse("product cost cannot be empty");
             res.send(response).status(400);
             return;
         } else if (
-            typeof newProduct.current_stock === "undefined" ||
-            newProduct.current_stock === ""
+            typeof newProduct.stock === "undefined" ||
+            newProduct.stock === ""
         ) {
             const response = new FalseResponse("product stock cannot be empty");
             res.send(response).status(400);
@@ -133,6 +134,27 @@ export const productHandle = {
                 error,
             );
             res.send(response).status(400);
+        }
+    },
+    update: async (req: Request, res: Response) => {
+        const { id } = req.params;
+        const updatedProduct = req.body;
+
+        try {
+            const updated = await productService.update(updatedProduct, id);
+            if (updated) {
+                const response = new TrueResponse("update product success");
+                res.status(200).send(response);
+            } else {
+                const response = new FalseResponse(
+                    "failed to updated product, error in update handles",
+                );
+                res.status(400).send(response);
+            }
+        } catch (error) {
+            console.log(error);
+            const response = new FalseResponse("error", error);
+            res.status(400).send(response);
         }
     },
     // update:async (req:Request, res:Response) => {
