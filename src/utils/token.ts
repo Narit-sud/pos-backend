@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { TrueResponse, FalseResponse } from "./class";
+import { TrueResponse, FalseResponse } from "../class/Response";
 
 export async function generateJWT(data: object): Promise<string> {
     const token = jwt.sign(

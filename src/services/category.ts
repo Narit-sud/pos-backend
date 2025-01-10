@@ -1,4 +1,6 @@
 import { pool } from "../utils/pool";
+import { QueryResults } from "../class/QueryResult";
+import { Category } from "../interfaces/Category";
 
 export const categoryService = {
     getAll: async () => {
@@ -6,13 +8,21 @@ export const categoryService = {
         try {
             const sql = "select id, name, detail from categories";
             const query = await client.query(sql);
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return query.rows;
+            if (query.rowCount && query.rowCount > 0) {
+                return new QueryResults(
+                    true,
+                    "get category data success",
+                    query.rows,
+                );
             } else {
-                throw new Error("Error query category data");
+                return new QueryResults(false, "get category data failed");
             }
         } catch (error) {
-            throw error;
+            return new QueryResults(
+                false,
+                `error getting category data`,
+                error,
+            );
         } finally {
             client.release();
         }
@@ -21,19 +31,28 @@ export const categoryService = {
     getById: async (id: string) => {
         const client = await pool.connect();
         try {
-            const sql = "select * from product_categories where id = $1";
+            const sql = "select * from categories where id = $1";
             const query = await client.query(sql, [id]);
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return query.rows;
+            if (query.rowCount && query.rowCount > 0) {
+                return new QueryResults(
+                    true,
+                    `get category id: ${id} success`,
+                    query.rows[0],
+                );
             } else {
-                throw new Error("Error query category data");
+                return new QueryResults(false, `category id: ${id} not found`);
             }
         } catch (error) {
-            throw error;
+            return new QueryResults(
+                false,
+                `error getting get category id: ${id}`,
+                error,
+            );
         } finally {
             client.release();
         }
     },
+
     update: async (updatedCategory: {
         id: string;
         name: string;
@@ -43,7 +62,7 @@ export const categoryService = {
         try {
             const { id, name, detail } = updatedCategory;
             const sql =
-                "update product_categories set name = $2, detail = $3 where id = $1";
+                "update categories set name = $2, detail = $3 where id = $1";
             const query = await client.query(sql, [id, name, detail]);
             if (query.rowCount !== null && query.rowCount > 0) {
                 return query.rows;
@@ -56,12 +75,12 @@ export const categoryService = {
             client.release();
         }
     },
+
     create: async (newCategory: { name: string; detail: string }) => {
         const client = await pool.connect();
         try {
             const { name, detail } = newCategory;
-            const sql =
-                "INSERT INTO product_categories (name,detail) VALUES ($1, $2)";
+            const sql = "INSERT INTO categories (name,detail) VALUES ($1, $2)";
             const query = await client.query(sql, [name, detail]);
             if (query.rowCount !== null && query.rowCount > 0) {
                 return true;

@@ -1,4 +1,5 @@
 import { Product } from "../types/Product";
+import { TrueResults, FalseResults, QueryResults } from "../class/QueryResult";
 import { pool } from "../utils/pool";
 
 export const productService = {
@@ -9,12 +10,22 @@ export const productService = {
                 "SELECT products.id AS id, products.name AS name, categories.id AS category, products.price AS price, products.cost AS cost, products.stock AS stock FROM products JOIN categories ON categories.id = products.category_id WHERE store_id = 1 AND products.status = 'active';";
             const query = await client.query(sql);
             if (query.rowCount !== null && query.rowCount > 0) {
-                return query.rows;
+                return new QueryResults(
+                    true,
+                    "get product data success",
+                    query.rows,
+                    undefined,
+                );
             } else {
-                throw new Error("Error query products data");
+                return new QueryResults(false, "get product data failed");
             }
         } catch (error) {
-            throw error;
+            return new QueryResults(
+                false,
+                "error getting product data",
+                undefined,
+                error,
+            );
         } finally {
             client.release();
         }
@@ -25,20 +36,28 @@ export const productService = {
 
         try {
             const sql =
-                "SELECT products.id  AS id, products.name AS name, categories.id AS category, products.detail AS detail, price,  cost, stock, products.detail FROM products JOIN categories ON products.category_id = categories.id where products.id = $1;";
+                "SELECT products.id AS id, products.name AS name, categories.id AS category, products.detail AS detail, price,  cost, stock, products.detail FROM products JOIN categories ON products.category_id = categories.id where products.id = $1;";
             const query = await client.query(sql, [id]);
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return query.rows[0];
+            if (query.rowCount && query.rowCount > 0) {
+                return new QueryResults(
+                    true,
+                    `get product id: ${id} success`,
+                    query.rows[0],
+                );
             } else {
-                throw new Error("Error query product data");
+                return new QueryResults(false, `product id: ${id} not found`);
             }
         } catch (error) {
-            console.log(error);
-            throw error;
+            return new QueryResults(
+                false,
+                `error getting get product id: ${id}`,
+                error,
+            );
         } finally {
             client.release();
         }
     },
+
     update: async (
         updatedProduct: {
             id: number;
@@ -79,7 +98,6 @@ export const productService = {
     },
     create: async (newProduct: Product) => {
         const client = await pool.connect();
-        console.log(newProduct);
 
         try {
             const { name, category, price, cost, stock, detail } = newProduct;
@@ -95,13 +113,17 @@ export const productService = {
                 detail,
             ]);
 
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return true;
+            if (query.rowCount && query.rowCount > 0) {
+                const result = new TrueResults("insert new product success");
+                return result;
             } else {
-                throw new Error("Error query product data");
+                const result = new FalseResults("insert new product failed");
+                return result;
             }
         } catch (error) {
-            throw error;
+            const result = new FalseResults("insert new product failed", error);
+            console.log(result);
+            return result;
         } finally {
             client.release();
         }

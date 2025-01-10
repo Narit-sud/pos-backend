@@ -1,48 +1,39 @@
 import { Request, Response } from "express";
 import { categoryService } from "../services/category";
-import { TrueResponse, FalseResponse } from "../utils/class";
+import { TrueResponse, FalseResponse } from "../class/Response";
 import { PgError } from "../interfaces/PgError";
+import { Category } from "../types/Category";
 
 export const categoryHandle = {
     getAll: async (req: Request, res: Response) => {
-        try {
-            const data = await categoryService.getAll();
-            if (data) {
-                const response = new TrueResponse(
-                    "get categories data success",
-                    data,
-                );
-                res.send(response).status(200);
-            } else {
-                const response = new FalseResponse("unexpected error occured");
-                res.send(response).status(404);
-            }
-        } catch (error) {
-            const response = new FalseResponse(
-                "failed to get categories data",
-                error,
+        const result = await categoryService.getAll();
+        console.log(result);
+
+        if (result.success) {
+            res.status(200).send(
+                new TrueResponse(
+                    "get gategory data success",
+                    result.data as Category[],
+                ),
             );
-            res.status(404).send(response);
+        } else {
+            res.status(404).send(new FalseResponse("unexpected error occured"));
         }
     },
     getById: async (req: Request, res: Response) => {
         const { id } = req.params;
-        try {
-            const data = await categoryService.getById(id);
-            if (data) {
-                const response = new TrueResponse(
+        const result = await categoryService.getById(id);
+        console.log(result);
+
+        if (result.success) {
+            res.status(200).send(
+                new TrueResponse(
                     `get categories data id ${id} success`,
-                    data,
-                );
-                res.send(response).status(200);
-            } else {
-                const response = new FalseResponse("unexpected error occured");
-                res.status(404).send(response);
-            }
-        } catch (error) {
-            const response = new FalseResponse(
-                "failed to get categories data, category might not existed",
+                    result.data as Category[],
+                ),
             );
+        } else {
+            const response = new FalseResponse("unexpected error occured");
             res.status(404).send(response);
         }
     },

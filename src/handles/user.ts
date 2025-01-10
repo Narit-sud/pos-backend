@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { userService } from "../services/user";
-import { TrueResponse, FalseResponse } from "../utils/class";
-import { generateJWT } from "../utils/token";
+import { TrueResponse, FalseResponse } from "../class/Response";
 import { Token } from "../utils/token";
 
 export const userHandle = {

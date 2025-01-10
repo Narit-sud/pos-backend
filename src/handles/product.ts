@@ -1,117 +1,80 @@
 import { Request, Response } from "express";
-import { TrueResponse, FalseResponse } from "../utils/class";
+import { TrueResponse, FalseResponse } from "../class/Response";
 import { productService } from "../services/product";
-import { PgError } from "../interfaces/PgError";
+import { Product } from "../interfaces/Product";
+import { validateNewProduct } from "../utils/validateNewProduct";
+
 export const productHandle = {
     getAll: async (req: Request, res: Response) => {
-        try {
-            const data = await productService.getAll();
-            if (data) {
-                const response = new TrueResponse(
+        const result = await productService.getAll();
+        console.log(result);
+
+        if (result.success && result.data) {
+            res.status(200).send(
+                new TrueResponse(
                     "get products data success",
-                    data,
-                );
-                res.send(response).status(200);
-            } else {
-                const response = new FalseResponse("unexpected error occured");
-                res.send(response).status(404);
-            }
-        } catch (error) {
-            const response = new FalseResponse(
-                "failed to get products data",
-                error,
+                    result.data as Product[],
+                ),
             );
-            res.send(response).status(404);
+        } else {
+            res.status(404).send(new FalseResponse("unexpected error occured"));
         }
     },
     getById: async (req: Request, res: Response) => {
         const { id } = req.params;
 
-        try {
-            const data = await productService.getById(id);
-            if (data) {
-                const response = new TrueResponse(
-                    `get product data id: ${id} success`,
-                    data,
-                );
-                res.send(response).status(200);
-            } else {
-                const response = new FalseResponse("unexpected error occured");
-                res.send(response).status(404);
-            }
-        } catch (error) {
-            const response = new FalseResponse(
-                `failed to get product id: ${id} data,this product might not existed`,
+        const result = await productService.getById(id);
+        console.log(result);
+
+        if (result.success) {
+            const response = new TrueResponse(
+                `get product data id: ${id} success`,
+                result.data as Product[],
             );
-            res.send(response).status(404);
+            res.send(response).status(200);
+        } else {
+            if (result.message.includes("not found")) {
+                res.status(404).send(new FalseResponse(result.message));
+            } else {
+                res.status(500).send(new FalseResponse("unexpected error"));
+            }
         }
     },
     create: async (req: Request, res: Response) => {
         const newProduct = req.body;
+        const checkNewProduct = validateNewProduct(newProduct);
+        if (checkNewProduct.valid) {
+            const result = await productService.create(newProduct);
 
-        if (typeof newProduct.name === "undefined" || newProduct.name === "") {
-            const response = new FalseResponse("product name cannot be empty");
-            res.send(response).status(400);
-            return;
-        } else if (
-            typeof newProduct.category === "undefined" ||
-            newProduct.category === ""
-        ) {
-            const response = new FalseResponse(
-                "product category cannot be empty",
-            );
-            res.send(response).status(400);
-            return;
-        } else if (
-            typeof newProduct.price === "undefined" ||
-            newProduct.price === ""
-        ) {
-            const response = new FalseResponse("product price cannot be empty");
-            res.send(response).status(400);
-            return;
-        } else if (
-            typeof newProduct.cost === "undefined" ||
-            newProduct.cost === ""
-        ) {
-            const response = new FalseResponse("product cost cannot be empty");
-            res.send(response).status(400);
-            return;
-        } else if (
-            typeof newProduct.stock === "undefined" ||
-            newProduct.stock === ""
-        ) {
-            const response = new FalseResponse("product stock cannot be empty");
-            res.send(response).status(400);
-        } else {
-            try {
-                const isCreated = await productService.create(newProduct);
-                if (isCreated) {
-                    const response = new TrueResponse(
-                        "create new product success",
-                    );
-                    res.send(response).status(201);
-                } else {
-                    const response = {
-                        success: false,
-                        message: "unexpected error",
-                    };
-                    res.send(response).status(500);
-                }
-            } catch (error) {
-                const PgError = error as PgError;
-                if (PgError.code === "23505") {
-                    const response = new FalseResponse(
-                        `${newProduct.name} already existed`,
-                    );
-                    res.send(response).status(400);
-                } else {
-                    const response = new FalseResponse(
-                        "unexpected error",
-                        error,
-                    );
-                    res.send(response).status(400);
-                }
+            console.log(result);
+
+            if (result.success) {
+                res.status(201).send(
+                    new TrueResponse("create new product success"),
+                );
+            } else if (
+                typeof result.error === "object" &&
+                result.error !== null &&
+                "constraint" in result.error &&
+                typeof result.error.constraint === "string" &&
+                result.error.constraint.includes("products_unique_name")
+            ) {
+                res.status(400).send(
+                    new FalseResponse("this product already existed"),
+                );
+            } else {
+                const response = new FalseResponse(
+                    "unexpected error",
+                    result.error,
+                );
+                res.status(500).send(response);
             }
+        } else {
+            res.status(400).send(
+                new FalseResponse(
+                    "some of product detail are missing, please check these required fields: name, category, price, cost, stock",
+                ),
+            );
         }
     },
     delete: async (req: Request, res: Response) => {
