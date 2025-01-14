@@ -7,7 +7,7 @@ export const productService = {
         const client = await pool.connect();
         try {
             const sql =
-                "SELECT products.id AS id, products.name AS name, categories.id AS category, products.price AS price, products.cost AS cost, products.stock AS stock FROM products JOIN categories ON categories.id = products.category_id WHERE store_id = 1 AND products.status = 'active';";
+                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.price AS price, products.cost AS cost, products.stock AS stock FROM products JOIN categories ON categories.id = products.category_id WHERE products.status = 'active' ORDER BY products.id;";
             const query = await client.query(sql);
             if (query.rowCount !== null && query.rowCount > 0) {
                 return new QueryResults(
@@ -33,10 +33,11 @@ export const productService = {
 
     getById: async (id: string) => {
         const client = await pool.connect();
+        console.log(id);
 
         try {
             const sql =
-                "SELECT products.id AS id, products.name AS name, categories.id AS category, products.detail AS detail, price,  cost, stock, products.detail FROM products JOIN categories ON products.category_id = categories.id where products.id = $1;";
+                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.detail AS detail, price,  cost, stock, products.detail FROM products JOIN categories ON products.category_id = categories.id where products.id = $1;";
             const query = await client.query(sql, [id]);
             if (query.rowCount && query.rowCount > 0) {
                 return new QueryResults(

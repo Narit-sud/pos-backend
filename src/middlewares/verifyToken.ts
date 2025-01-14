@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { FalseResponse } from "../utils/class";
+import { FalseResponse } from "../class/Response";
 
 export async function verifyToken(
     req: Request,

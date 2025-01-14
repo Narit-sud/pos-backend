@@ -11,9 +11,9 @@ export async function generateJWT(data: object): Promise<string> {
     return token;
 }
 export const Token = {
-    generate: async (user: object) => {
+    generate: async (userId: object) => {
         const token = jwt.sign(
-            { data: user }, // Payload
+            { userId }, // Payload
             process.env.JWT_SECRET!, // Secret key
             { expiresIn: 24 * 3600 }, // Expiration time in seconds (24 hours)
         );
