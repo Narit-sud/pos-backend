@@ -7,7 +7,7 @@ export const productService = {
         const client = await pool.connect();
         try {
             const sql =
-                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.price AS price, products.cost AS cost, products.stock AS stock FROM products JOIN categories ON categories.id = products.category_id WHERE products.status = 'active' ORDER BY products.id;";
+                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.price AS price, products.cost AS cost, products.stock AS stock, products.detail as detail FROM products JOIN categories ON categories.id = products.category_id WHERE products.status = 'active' ORDER BY products.id;";
             const query = await client.query(sql);
             if (query.rowCount !== null && query.rowCount > 0) {
                 return new QueryResults(

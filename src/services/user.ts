@@ -1,9 +1,8 @@
 import { pool } from "../utils/pool";
-import { User } from "../types/User";
 import { encryptPassword, comparePassword } from "../utils/encrypt";
+import { User } from "../types/User";
 import { QueryResults } from "../class/QueryResult";
 import { PgError } from "../interfaces/PgError";
-import { compare } from "bcrypt";
 
 export const userService = {
     getAll: async () => {

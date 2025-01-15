@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { TrueResponse, FalseResponse } from "../class/Response";
+import { FalseResponse } from "../class/Response";
 
 export async function generateJWT(data: object): Promise<string> {
     const token = jwt.sign(
@@ -10,10 +10,11 @@ export async function generateJWT(data: object): Promise<string> {
     );
     return token;
 }
+
 export const Token = {
-    generate: async (userId: object) => {
+    generate: async (user: object) => {
         const token = jwt.sign(
-            { userId }, // Payload
+            { user }, // Payload
             process.env.JWT_SECRET!, // Secret key
             { expiresIn: 24 * 3600 }, // Expiration time in seconds (24 hours)
         );
@@ -46,5 +47,10 @@ export const Token = {
             const response = new FalseResponse("Invalid token");
             res.status(403).send(response);
         }
+    },
+
+    decode: (token: string) => {
+        const decoded = jwt.decode(token);
+        return decoded;
     },
 };

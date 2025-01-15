@@ -1,11 +1,12 @@
-import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { Request, Response } from "express";
 import { FalseResponse, TrueResponse } from "../class/Response";
-import { userService } from "../services/user";
 import { Token } from "../utils/token";
+import { UserAuth } from "../interfaces/User";
+import { userService } from "../services/user";
 import { validateNewuser } from "../utils/validateNewUser";
 
-export const publicHandle = {
+export const authHandle = {
     login: async (req: Request, res: Response) => {
         const loginDetail = await req.body;
         const checkLogin = await userService.login(loginDetail);
@@ -37,7 +38,7 @@ export const publicHandle = {
                 sameSite: "none",
                 path: "/",
             })
-            .send(new TrueResponse(result.message, result.data, token));
+            .send(new TrueResponse(result.message, result.data));
     },
 
     register: async (req: Request, res: Response) => {
@@ -120,6 +121,34 @@ export const publicHandle = {
             const response = new FalseResponse("Invalid token");
             res.status(403).send(response);
         }
-        res.status(200).send(new TrueResponse("token valid"));
+    },
+
+    testCookie: (req: Request, res: Response) => {
+        console.log(req.cookies);
+        res.status(200).send(req.cookies);
+    },
+
+    relogin: async (req: Request, res: Response) => {
+        const { jwt } = req.cookies;
+        const { username } = (Token.decode(jwt) as UserAuth).user;
+        const authData = await userService.getAuth(username);
+        res.status(200).send(
+            new TrueResponse(
+                `relogin: get auth of user ${username} success`,
+                authData.data,
+            ),
+        );
+    },
+
+    logout: async (req: Request, res: Response) => {
+        res.status(200)
+            .cookie("jwt", "logout", {
+                expires: new Date(Date.now()),
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                path: "/",
+            })
+            .send(new TrueResponse("user logout"));
     },
 };
