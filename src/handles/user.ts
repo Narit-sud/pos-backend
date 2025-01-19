@@ -25,7 +25,7 @@ export const userHandle = {
     getById: async (req: Request, res: Response) => {
         const { id } = req.params;
 
-        const result = await userService.getById(id);
+        const result = await userService.getByUsername(id);
         console.log(result);
 
         if (result.success && result.data) {

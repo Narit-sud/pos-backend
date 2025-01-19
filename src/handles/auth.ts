@@ -5,51 +5,48 @@ import { Token } from "../utils/token";
 import { UserAuth } from "../interfaces/User";
 import { userService } from "../services/user";
 import { validateNewuser } from "../utils/validateNewUser";
+import { authService } from "../services/auth";
 
 export const authHandle = {
     login: async (req: Request, res: Response) => {
         const loginDetail = await req.body;
-        const checkLogin = await userService.login(loginDetail);
-        console.log(checkLogin);
-
-        if (checkLogin && !checkLogin.success) {
-            // if login is not ok, password doesn't matched
-            res.status(401).send(new FalseResponse(checkLogin.message));
-            return;
+        try {
+            await authService.login(loginDetail);
+            const token = await Token.generate(loginDetail.username);
+            res.status(200)
+                .cookie("jwt", token, {
+                    expires: new Date(Date.now() + 60 * 60 * 24 * 1000),
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    path: "/",
+                })
+                .send(new TrueResponse("login success"));
+        } catch (error) {
+            if (
+                error instanceof Error &&
+                error.message.includes("wrong password")
+            ) {
+                res.status(404).send(new FalseResponse(error.message));
+                return;
+            } else if (
+                error instanceof Error &&
+                error.message.includes("user not found")
+            ) {
+                res.status(404).send(new FalseResponse(error.message));
+            }
         }
-
-        // if password matched
-        const result = await userService.getAuth(
-            loginDetail.username as string,
-        );
-        console.log(result);
-
-        if (!result.success) {
-            res.status(500).send(new FalseResponse(result.message));
-            return;
-        }
-
-        const token = await Token.generate(result.data);
-        res.status(200)
-            .cookie("jwt", token, {
-                expires: new Date(Date.now() + 60 * 60 * 24 * 1000),
-                httpOnly: true,
-                secure: true,
-                sameSite: "none",
-                path: "/",
-            })
-            .send(new TrueResponse(result.message, result.data));
     },
 
     register: async (req: Request, res: Response) => {
-        const userData = await req.body;
-        const newUserValid = validateNewuser(userData);
+        const newUser = await req.body;
+        const newUserValid = validateNewuser(newUser);
         if (!newUserValid.valid && typeof newUserValid.reason === "string") {
             res.status(400).send(new FalseResponse(newUserValid.reason));
             return;
         }
 
-        const result = await userService.create(userData);
+        const result = await authService.register(newUser);
         console.log(result);
 
         if (result.success) {
@@ -98,44 +95,14 @@ export const authHandle = {
         return;
     },
 
-    verifyToken: (req: Request, res: Response) => {
-        const { token } = req.body;
-        if (!token) {
-            res.status(401).send(new FalseResponse("No token provided"));
-            return;
-        }
-
-        try {
-            const secretKey = process.env.JWT_SECRET;
-            if (!secretKey) {
-                throw new Error("SECRET KEY IS UNDEFINED");
-            }
-
-            const decode = jwt.verify(token, secretKey);
-            if (!decode) {
-                throw new Error("Invalid token");
-            }
-
-            res.status(200).send(new TrueResponse("Token valid"));
-        } catch (error) {
-            const response = new FalseResponse("Invalid token");
-            res.status(403).send(response);
-        }
-    },
-
-    testCookie: (req: Request, res: Response) => {
-        console.log(req.cookies);
-        res.status(200).send(req.cookies);
-    },
-
     relogin: async (req: Request, res: Response) => {
         const { jwt } = req.cookies;
         const { username } = (Token.decode(jwt) as UserAuth).user;
-        const authData = await userService.getAuth(username);
+        const userData = await userService.getByUsername(username);
         res.status(200).send(
             new TrueResponse(
                 `relogin: get auth of user ${username} success`,
-                authData.data,
+                userData.data,
             ),
         );
     },

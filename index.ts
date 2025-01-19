@@ -7,8 +7,9 @@ import { RoleRouter } from "./src/routers/role";
 import { CategoryRouter } from "./src/routers/category";
 import { ProductRouter } from "./src/routers/product";
 import { pool } from "./src/utils/pool";
-import { Token } from "./src/utils/token";
 import { AuthRouter } from "./src/routers/auth";
+import { TestingRouter } from "./src/routers/testing";
+import { verifyToken } from "./src/middlewares/verifyToken";
 
 const app = express();
 
@@ -16,13 +17,17 @@ app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(cookieParser());
 
+// partial public api
 app.use("/auth", AuthRouter);
 
 // private api
-app.use("/user", Token.verify, UserRouter);
-app.use("/role", Token.verify, RoleRouter);
-app.use("/category", Token.verify, CategoryRouter);
-app.use("/product", Token.verify, ProductRouter);
+app.use("/user", verifyToken, UserRouter);
+app.use("/role", verifyToken, RoleRouter);
+app.use("/category", verifyToken, CategoryRouter);
+app.use("/product", verifyToken, ProductRouter);
+
+// testing api
+app.use("/testing", TestingRouter);
 
 // keep connection alive
 setInterval(async () => {
