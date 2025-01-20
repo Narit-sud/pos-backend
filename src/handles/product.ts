@@ -6,18 +6,28 @@ import { validateNewProduct } from "../utils/validateNewProduct";
 
 export const productHandle = {
     getAll: async (req: Request, res: Response) => {
-        const result = await productService.getAll();
-        console.log(result);
-
-        if (result.success && result.data) {
+        try {
+            const result = await productService.getAll();
             res.status(200).send(
-                new TrueResponse(
-                    "get products data success",
-                    result.data as Product[],
-                ),
+                new TrueResponse("get products data success", result),
             );
-        } else {
-            res.status(404).send(new FalseResponse("unexpected error occured"));
+            return;
+        } catch (error) {
+            if (error instanceof Error) {
+                if (error.message.includes("not found")) {
+                    res.status(404).send(new FalseResponse(error.message));
+                    return;
+                } else {
+                    res.status(400).send(
+                        new FalseResponse("fetch failed", error.message),
+                    );
+                }
+            } else {
+                res.status(404).send(
+                    new FalseResponse("unexpected error", error),
+                );
+                return;
+            }
         }
     },
     getById: async (req: Request, res: Response) => {

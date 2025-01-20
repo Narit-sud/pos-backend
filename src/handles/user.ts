@@ -22,7 +22,7 @@ export const userHandle = {
         }
     },
 
-    getById: async (req: Request, res: Response) => {
+    getByUsername: async (req: Request, res: Response) => {
         const { id } = req.params;
 
         const result = await userService.getByUsername(id);

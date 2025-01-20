@@ -2,14 +2,27 @@ import { pool } from "../utils/pool";
 import { encryptPassword, comparePassword } from "../utils/encrypt";
 import { User } from "../types/User";
 import { QueryResults } from "../class/QueryResult";
-import { PgError } from "../interfaces/PgError";
 
 export const userService = {
     getAll: async () => {
         const client = await pool.connect();
+        const sql = `
+            SELECT 
+                employees.id as id, 
+                employees.name as name, 
+                employees.surname as surname, 
+                employees.email as email, 
+                employees.phone_number as phone_number, 
+                employees.username as username, 
+                employees.status as status, 
+                roles.name AS role 
+            FROM 
+                employees 
+            JOIN 
+                roles 
+            ON
+                roles.id = employees.role_id`;
         try {
-            const sql =
-                "SELECT employees.id, employees.name, employees.surname, employees.email, employees.phone_number, employees.username, employees.status, roles.name AS ROLE FROM employees JOIN roles ON roles.id = employees.role_id";
             const query = await client.query(sql);
             if (query.rowCount && query.rowCount > 0) {
                 return new QueryResults(
@@ -18,10 +31,10 @@ export const userService = {
                     query.rows,
                 );
             } else {
-                return new QueryResults(false, "failed to query users data");
+                throw new Error("no user data found");
             }
         } catch (error) {
-            return new QueryResults(false, "error query users data", error);
+            throw error;
         } finally {
             client.release();
         }

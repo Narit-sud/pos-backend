@@ -34,6 +34,7 @@ export const authHandle = {
                 error.message.includes("user not found")
             ) {
                 res.status(404).send(new FalseResponse(error.message));
+                return;
             }
         }
     },
@@ -98,13 +99,17 @@ export const authHandle = {
     relogin: async (req: Request, res: Response) => {
         const { jwt } = req.cookies;
         const { username } = (Token.decode(jwt) as UserAuth).user;
-        const userData = await userService.getByUsername(username);
-        res.status(200).send(
-            new TrueResponse(
-                `relogin: get auth of user ${username} success`,
-                userData.data,
-            ),
-        );
+        try {
+            const userData = await userService.getByUsername(username);
+            res.status(200).send(
+                new TrueResponse(
+                    `relogin: get auth of user ${username} success`,
+                    userData.data,
+                ),
+            );
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     logout: async (req: Request, res: Response) => {

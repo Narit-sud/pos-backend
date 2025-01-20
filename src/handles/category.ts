@@ -6,19 +6,32 @@ import { Category } from "../types/Category";
 
 export const categoryHandle = {
     getAll: async (req: Request, res: Response) => {
-        const result = await categoryService.getAll();
-        console.log(result);
-
-        if (result.success) {
+        try {
+            const result = await categoryService.getAll();
             res.status(200).send(
-                new TrueResponse(
-                    "get gategory data success",
-                    result.data as Category[],
-                ),
+                new TrueResponse("get category data success", result),
             );
-        } else {
-            res.status(404).send(new FalseResponse("unexpected error occured"));
+        } catch (error) {
+            if (error instanceof Error && error.message.includes("not found")) {
+                res.status(404).send(new FalseResponse(error.message));
+                return;
+            } else {
+                res.status(500).send(
+                    new FalseResponse("internal error", error),
+                );
+                return;
+            }
         }
+        // if (result.success) {
+        //     res.status(200).send(
+        //         new TrueResponse(
+        //             "get gategory data success",
+        //             result.data as Category[],
+        //         ),
+        //     );
+        // } else {
+        //     res.status(404).send(new FalseResponse("unexpected error occured"));
+        // }
     },
     getById: async (req: Request, res: Response) => {
         const { id } = req.params;

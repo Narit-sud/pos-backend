@@ -5,24 +5,24 @@ import { Category } from "../interfaces/Category";
 export const categoryService = {
     getAll: async () => {
         const client = await pool.connect();
+        const sql = `
+            SELECT 
+                id,
+                name,
+                detail 
+            FROM
+                categories 
+            ORDER BY 
+                id`;
         try {
-            const sql = "select id, name, detail from categories";
             const query = await client.query(sql);
             if (query.rowCount && query.rowCount > 0) {
-                return new QueryResults(
-                    true,
-                    "get category data success",
-                    query.rows,
-                );
+                return query.rows;
             } else {
-                return new QueryResults(false, "get category data failed");
+                throw new Error("category not found");
             }
         } catch (error) {
-            return new QueryResults(
-                false,
-                `error getting category data`,
-                error,
-            );
+            throw error;
         } finally {
             client.release();
         }

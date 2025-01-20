@@ -6,26 +6,29 @@ export const productService = {
     getAll: async () => {
         const client = await pool.connect();
         try {
-            const sql =
-                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.price AS price, products.cost AS cost, products.stock AS stock, products.detail as detail FROM products JOIN categories ON categories.id = products.category_id WHERE products.status = 'active' ORDER BY products.id;";
+            const sql = `
+                SELECT
+                    products.id AS id,
+                    products.name AS name,
+                    products.category_id as category,
+                    products.price AS price, 
+                    products.cost AS cost,
+                    products.stock AS stock,
+                    products.detail as detail
+                FROM 
+                    products 
+                WHERE 
+                    products.status = 'active' 
+                ORDER BY
+                    products.id;`;
             const query = await client.query(sql);
             if (query.rowCount !== null && query.rowCount > 0) {
-                return new QueryResults(
-                    true,
-                    "get product data success",
-                    query.rows,
-                    undefined,
-                );
+                return query.rows;
             } else {
-                return new QueryResults(false, "get product data failed");
+                throw new Error("product not found");
             }
         } catch (error) {
-            return new QueryResults(
-                false,
-                "error getting product data",
-                undefined,
-                error,
-            );
+            throw error;
         } finally {
             client.release();
         }
@@ -36,8 +39,23 @@ export const productService = {
         console.log(id);
 
         try {
-            const sql =
-                "SELECT products.id AS id, products.name AS name, categories.name AS category, products.detail AS detail, price,  cost, stock, products.detail FROM products JOIN categories ON products.category_id = categories.id where products.id = $1;";
+            const sql = `
+                SELECT
+                    products.id AS id,
+                    products.name AS name,
+                    products.category_id as category,
+                    products.price AS price, 
+                    products.cost AS cost,
+                    products.stock AS stock,
+                    products.detail as detail
+                FROM 
+                    products 
+                WHERE 
+                    products.status = 'active' 
+                AND
+                    products.id = $1
+                ORDER BY
+                    products.id;`;
             const query = await client.query(sql, [id]);
             if (query.rowCount && query.rowCount > 0) {
                 return new QueryResults(
@@ -74,7 +92,7 @@ export const productService = {
         const { name, category, price, cost, stock, detail } = updatedProduct;
         const client = await pool.connect();
         try {
-            const sql = `UPDATE products SET "name"=$1, category_id=$2, price=$3, stock=$4 , updated_at=now(), "cost"=$5, detail=$6 WHERE id=$7`;
+            const sql = `UPDATE products SET "name"=$1, category_id=$2, price=$3, stock=$4 , updated_at=now(), "cost"=$5, detail=$6, updated_at = now() WHERE id=$7`;
             const query = await client.query(sql, [
                 name,
                 category,
