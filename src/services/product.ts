@@ -1,5 +1,4 @@
 import { Product } from "../types/Product"
-import { TrueResults, FalseResults, QueryResults } from "../class/QueryResult"
 import { pool } from "../utils/pool"
 
 export const getAllProducts = async (): Promise<Product[]> => {

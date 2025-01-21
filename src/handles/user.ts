@@ -1,65 +1,70 @@
-import { Request, Response } from "express";
-import { userService } from "../services/user";
-import { TrueResponse, FalseResponse } from "../class/Response";
-import { User } from "../interfaces/User";
+import { Request, Response } from "express"
+import {
+    getAllUserService,
+    getUserByUsernameService,
+    updateUserService,
+} from "../services/user"
+import { TrueResponse, FalseResponse } from "../class/Response"
 
-export const userHandle = {
-    getAll: async (req: Request, res: Response) => {
-        const result = await userService.getAll();
-        console.log(result);
-
-        if (result.success && result.data) {
-            res.status(200).send(
-                new TrueResponse(
-                    "success geting users data",
-                    result.data as User[],
-                ),
-            );
-        } else {
-            res.status(404).send(
-                new FalseResponse("failed getting users data"),
-            );
+export const getAllUserHandle = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    try {
+        const users = await getAllUserService()
+        if (!users) {
+            res.status(404).send(new FalseResponse("no user found"))
+            return
         }
-    },
-
-    getByUsername: async (req: Request, res: Response) => {
-        const { id } = req.params;
-
-        const result = await userService.getByUsername(id);
-        console.log(result);
-
-        if (result.success && result.data) {
-            res.status(200).send(
-                new TrueResponse(
-                    `success getting user id: ${id} data`,
-                    result.data,
-                ),
-            );
-        } else {
-            if (result.message.includes("doesn't exited")) {
-                res.status(404).send(new FalseResponse(result.message));
-            } else {
-                res.status(500).send(
-                    new FalseResponse("unexpected error getting user by id"),
-                );
-            }
+        res.status(200).send(new TrueResponse("get users data success", users))
+        return
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).send(new FalseResponse(error.message))
         }
-    },
+    }
+}
 
-    update: async (req: Request, res: Response) => {
-        const { id } = req.params;
-        const updatedUser = await req.body;
-
-        try {
-            const isUpdated = await userService.update({ id, ...updatedUser });
-
-            if (isUpdated) {
-                const response = new TrueResponse("success updated user data");
-                res.status(200).send(response);
-            }
-        } catch (error) {
-            const response = new FalseResponse("Unexpected error");
-            res.status(400).send(response);
+export const getUserByUsernameHandle = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    const { username } = req.params
+    try {
+        const user = await getUserByUsernameService(username)
+        if (!user) {
+            res.status(404).send(new FalseResponse("user not found"))
+            return
         }
-    },
-};
+
+        res.status(200).send(
+            new TrueResponse(
+                `get user from username: ${username} success`,
+                user,
+            ),
+        )
+        return
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).send(new FalseResponse(error.message))
+        }
+    }
+}
+
+export const updateUserHandle = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    const { id } = req.params
+    const updatedUser = await req.body
+
+    try {
+        await updateUserService({ id, ...updatedUser })
+        const response = new TrueResponse("success updated user data")
+        res.status(200).send(response)
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).send(new FalseResponse(error.message))
+        }
+    }
+}

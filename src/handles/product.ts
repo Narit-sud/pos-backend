@@ -74,20 +74,22 @@ export const createProductHandle = async (
 ): Promise<void> => {
     const newProduct = req.body
     try {
-        const isProductValid = validateNewProduct(newProduct)
-        if (isProductValid) {
-            await createProduct(newProduct)
-            res.status(201).send("create new product success")
-            return
-        }
+        validateNewProduct(newProduct)
+        await createProduct(newProduct)
+        res.status(201).send(new TrueResponse("create new product success"))
+        return
     } catch (error) {
         if (error instanceof Error) {
             if (error.message.includes("empty")) {
                 res.status(400).send(new FalseResponse(error.message))
                 return
             } else {
-                res.status(500).send(new FalseResponse(error.message))
+                res.status(400).send(new FalseResponse(error.message))
+                return
             }
+        } else {
+            res.status(500).send(new FalseResponse("unexpected error"))
+            return
         }
     }
 }

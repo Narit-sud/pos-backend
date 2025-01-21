@@ -1,8 +1,7 @@
 import { Request, Response } from "express"
 import { FalseResponse, TrueResponse } from "../class/Response"
 import { Token } from "../utils/token"
-import { UserAuth } from "../interfaces/User"
-import { userService } from "../services/user"
+import { getUserByUsernameService } from "../services/user"
 import { validateNewUser } from "../utils/validateNewUser"
 import { loginService, registerService } from "../services/auth"
 
@@ -77,17 +76,23 @@ export const reloginHandle = async (
     res: Response,
 ): Promise<void> => {
     const { jwt } = req.cookies
-    const { username } = (Token.decode(jwt) as UserAuth).user
+
     try {
-        const userData = await userService.getByUsername(username)
+        const decode = Token.decode(jwt)
+
+        const userData = await getUserByUsernameService(decode.username)
         res.status(200).send(
             new TrueResponse(
-                `relogin: get auth of user ${username} success`,
-                userData.data,
+                `relogin: get auth of user ${decode.username} success`,
+                userData,
             ),
         )
+        return
     } catch (error) {
-        console.log(error)
+        if (error instanceof Error) {
+            res.status(404).send(new FalseResponse(error.message))
+            return
+        }
     }
 }
 
