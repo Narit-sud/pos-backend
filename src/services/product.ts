@@ -1,12 +1,11 @@
-import { Product } from "../types/Product";
-import { TrueResults, FalseResults, QueryResults } from "../class/QueryResult";
-import { pool } from "../utils/pool";
+import { Product } from "../types/Product"
+import { TrueResults, FalseResults, QueryResults } from "../class/QueryResult"
+import { pool } from "../utils/pool"
 
-export const productService = {
-    getAll: async () => {
-        const client = await pool.connect();
-        try {
-            const sql = `
+export const getAllProducts = async (): Promise<Product[]> => {
+    const client = await pool.connect()
+    try {
+        const sql = `
                 SELECT
                     products.id AS id,
                     products.name AS name,
@@ -20,26 +19,24 @@ export const productService = {
                 WHERE 
                     products.status = 'active' 
                 ORDER BY
-                    products.id;`;
-            const query = await client.query(sql);
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return query.rows;
-            } else {
-                throw new Error("product not found");
-            }
-        } catch (error) {
-            throw error;
-        } finally {
-            client.release();
+                    products.id;`
+        const query = await client.query(sql)
+        if (query.rowCount !== null && query.rowCount > 0) {
+            return query.rows
+        } else {
+            throw new Error("product not found")
         }
-    },
+    } catch (error) {
+        throw error
+    } finally {
+        client.release()
+    }
+}
 
-    getById: async (id: string) => {
-        const client = await pool.connect();
-        console.log(id);
-
-        try {
-            const sql = `
+export const getProductById = async (id: string): Promise<Product> => {
+    const client = await pool.connect()
+    try {
+        const sql = `
                 SELECT
                     products.id AS id,
                     products.name AS name,
@@ -55,110 +52,108 @@ export const productService = {
                 AND
                     products.id = $1
                 ORDER BY
-                    products.id;`;
-            const query = await client.query(sql, [id]);
-            if (query.rowCount && query.rowCount > 0) {
-                return new QueryResults(
-                    true,
-                    `get product id: ${id} success`,
-                    query.rows[0],
-                );
-            } else {
-                return new QueryResults(false, `product id: ${id} not found`);
-            }
-        } catch (error) {
-            return new QueryResults(
-                false,
-                `error getting get product id: ${id}`,
-                error,
-            );
-        } finally {
-            client.release();
+                    products.id;`
+        const query = await client.query(sql, [id])
+        if (query.rowCount) {
+            return query.rows[0]
+        } else {
+            throw new Error("product not found")
         }
-    },
+    } catch (error) {
+        throw error
+    } finally {
+        client.release()
+    }
+}
 
-    update: async (
-        updatedProduct: {
-            id: number;
-            name: string;
-            category: number;
-            price: number;
-            cost: number;
-            stock: number;
-            detail: string;
-        },
-        id: string,
-    ) => {
-        const { name, category, price, cost, stock, detail } = updatedProduct;
-        const client = await pool.connect();
-        try {
-            const sql = `UPDATE products SET "name"=$1, category_id=$2, price=$3, stock=$4 , updated_at=now(), "cost"=$5, detail=$6, updated_at = now() WHERE id=$7`;
-            const query = await client.query(sql, [
-                name,
-                category,
-                price,
-                stock,
-                cost,
-                detail,
-                id,
-            ]);
+export const createProduct = async (product: Product): Promise<void> => {
+    const client = await pool.connect()
 
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return true;
-            } else {
-                throw new Error("Error updating products data");
-            }
-        } catch (error) {
-            console.log(error);
-            return error;
-        } finally {
-            client.release();
+    try {
+        const { name, category, price, cost, stock, detail } = product
+        const sql = `
+            INSERT
+            INTO
+                products
+                (name, category_id, price, cost, stock, detail)
+            VALUES
+                ($1,$2,$3,$4,$5,$6);`
+
+        const query = await client.query(sql, [
+            name,
+            category,
+            price,
+            cost,
+            stock,
+            detail,
+        ])
+
+        if (!query.rowCount) {
+            throw new Error("create product failed")
         }
-    },
-    create: async (newProduct: Product) => {
-        const client = await pool.connect();
+    } catch (error) {
+        throw error
+    } finally {
+        client.release()
+    }
+}
 
-        try {
-            const { name, category, price, cost, stock, detail } = newProduct;
-            const sql =
-                "INSERT INTO products (name, category_id, price, cost, stock, detail)  VALUES ($1,$2,$3,$4,$5,$6);";
+export const updateProduct = async (product: Product): Promise<void> => {
+    const client = await pool.connect()
+    const { id, name, category, price, cost, stock, detail } = product
+    try {
+        const sql = `
+            UPDATE
+                products 
+            SET 
+                "name" = $1, 
+                category_id = $2, 
+                price = $3, 
+                stock = $4 , 
+                "cost" = $5, 
+                detail = $6, 
+                updated_at = now() 
+            WHERE 
+                id = $7`
+        const query = await client.query(sql, [
+            name,
+            category,
+            price,
+            stock,
+            cost,
+            detail,
+            id,
+        ])
 
-            const query = await client.query(sql, [
-                name,
-                category,
-                price,
-                cost,
-                stock,
-                detail,
-            ]);
-
-            if (query.rowCount && query.rowCount > 0) {
-                const result = new TrueResults("insert new product success");
-                return result;
-            } else {
-                const result = new FalseResults("insert new product failed");
-                return result;
-            }
-        } catch (error) {
-            const result = new FalseResults("insert new product failed", error);
-            console.log(result);
-            return result;
-        } finally {
-            client.release();
+        if (!query.rowCount) {
+            throw new Error("update product data failed")
         }
-    },
-    delete: async (productId: string) => {
-        const client = await pool.connect();
-        try {
-            const sql = "DELETE FROM products WHERE id = $1";
-            const query = await client.query(sql, [productId]);
-            if (query.rowCount !== null && query.rowCount > 0) {
-                return true;
-            }
-        } catch (error) {
-            throw error;
-        } finally {
-            client.release();
+    } catch (error) {
+        throw error
+    } finally {
+        client.release()
+    }
+}
+
+export const deleteProduct = async (id: string): Promise<void> => {
+    const client = await pool.connect()
+    try {
+        const sql = `
+                UPDATE 
+                    products
+                SET
+                    status = 'deleted'
+                WHERE
+                    id = $1
+                AND
+                    status != 'deleted'`
+        const query = await client.query(sql, [id])
+        if (!query.rowCount) {
+            throw new Error(`product id ${id} doesn't existed`)
         }
-    },
-};
+    } catch (error) {
+        throw error
+    } finally {
+        client.release()
+    }
+}
