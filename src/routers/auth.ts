@@ -1,12 +1,18 @@
-import { Router } from "express";
-import { Token } from "../utils/token";
-import { authHandle } from "../handles/auth";
-import { verifyToken } from "../middlewares/verifyToken";
+import { Router } from "express"
+import {
+    loginHandle,
+    registerHandle,
+    reloginHandle,
+    logoutHandle,
+} from "../handles/auth"
+import { verifyToken } from "../middlewares/verifyToken"
 
-export const AuthRouter = Router();
+export const AuthRouter = Router()
 
-AuthRouter.post("/login", authHandle.login);
-AuthRouter.post("/register", authHandle.register);
+// public api
+AuthRouter.post("/login", loginHandle)
+AuthRouter.post("/register", registerHandle)
 
-AuthRouter.get("/relogin", verifyToken, authHandle.relogin);
-AuthRouter.post("/logout", verifyToken, authHandle.logout);
+// private api
+AuthRouter.get("/relogin", verifyToken, reloginHandle)
+AuthRouter.post("/logout", verifyToken, logoutHandle)

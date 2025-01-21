@@ -1,46 +1,52 @@
-import { User } from "../types/User";
-
-// id: number;
-// name: string;
-// surname: string;
-// email: string;
-// phone_number: string;
-// username: string;
-// password: string;
-// status: string;
-
-export const validateNewuser = (newUser: User) => {
+import { User } from "../types/User"
+export const validateNewUser = (newUser: User): boolean => {
+    // validate name
     if (typeof newUser.name === "undefined" || newUser.name === "") {
-        return { valid: false, reason: "user name empty" };
+        throw new Error("name empty")
     } else if (newUser.name.split(" ").length > 1) {
-        return { valid: false, reason: `user name contain space` };
+        throw new Error("name contain space")
     }
 
+    // validate surname
     if (typeof newUser.surname === "undefined") {
-        return { valid: false, reason: "user surname empty" };
+        throw new Error("surname empty")
     } else if (newUser.surname.split(" ").length > 1) {
-        return { valid: false, reason: "user surname contain space" };
+        throw new Error("surname contain space")
     }
 
+    // validate email
     if (typeof newUser.email === "undefined") {
-        return { valid: false, reason: "user email empty" };
+        throw new Error("email empty")
     } else if (newUser.email.split(" ").length > 1) {
-        return { valid: false, reason: "user email contain space" };
+        throw new Error("email contain space")
     }
 
+    // validate phone_number
     if (typeof newUser.phone_number === "undefined") {
-        return { valid: false, reason: "user phone number empty" };
-    } else if (newUser.email.split(" ").length > 1) {
-        return { valid: false, reason: "user phone number contain space" };
+        throw new Error("phone number empty")
+    } else if (newUser.phone_number.split(" ").length > 1) {
+        throw new Error("phone number contain space")
     } else if (newUser.phone_number.length !== 10) {
-        return { valid: false, reason: "phone number has to be 10 digits" };
+        throw new Error("phone number has to be 10 digits")
     }
 
+    // validate username
+    if (typeof newUser.username === "undefined" || newUser.username === "") {
+        throw new Error("username empty")
+    } else if (newUser.username.split(" ").length > 1) {
+        throw new Error("username contain space")
+    } else if (newUser.username.length < 6) {
+        throw new Error("username too short, need atleast 6 letters")
+    }
+
+    // validate password
     if (typeof newUser.password === "undefined") {
-        return { valid: false, reason: "user password empty" };
+        throw new Error("password empty")
     } else if (newUser.password.split(" ").length > 1) {
-        return { valid: false, reason: "user password contain space" };
+        throw new Error("password contain space")
+    } else if (newUser.password.length > 10) {
+        throw new Error("username too short, need atleast 10 charactors")
     }
 
-    return { valid: true };
-};
+    return true
+}
