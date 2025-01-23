@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import {
     getAllUserService,
+    getUserByIdService,
     getUserByUsernameService,
     updateUserService,
 } from "../services/user"
@@ -19,6 +20,25 @@ export const getAllUserHandle = async (
         }
         res.status(200).send(new TrueResponse("get users data success", users))
         return
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
+        }
+    }
+}
+
+export const getUserByIdHandle = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    const { id } = req.params
+    try {
+        const user = await getUserByIdService(id)
+        res.status(200).send(
+            new TrueResponse(`Get user id ${id} success`, user),
+        )
     } catch (error) {
         if (error instanceof CustomError) {
             res.status(error.code).send(new FalseResponse(error.message))

@@ -1,4 +1,4 @@
-import { User } from "../types/User"
+import { User } from "../interfaces/User"
 import { CustomError } from "../class/CustomError"
 
 export const validateNewUser = (newUser: User): void => {

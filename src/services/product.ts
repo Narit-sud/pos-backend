@@ -1,4 +1,4 @@
-import { Product } from "../types/Product"
+import { Product } from "../interfaces/Product"
 import { pool } from "../utils/pool"
 import { CustomError } from "../class/CustomError"
 

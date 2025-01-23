@@ -1,6 +1,6 @@
 import { pool } from "../utils/pool"
 import { comparePassword, encryptPassword } from "../utils/encrypt"
-import { User } from "../types/User"
+import { User } from "../interfaces/User"
 import { LoginDetail } from "../interfaces/LoginDetail"
 import { CustomError } from "../class/CustomError"
 
