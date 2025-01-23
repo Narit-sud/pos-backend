@@ -1,6 +1,6 @@
 import { pool } from "../utils/pool"
-import { QueryResults } from "../class/QueryResult"
 import { Category } from "../interfaces/Category"
+import { CustomError } from "../class/CustomError"
 
 export const getAllCategoryService = async (): Promise<Category[]> => {
     const client = await pool.connect()
@@ -18,7 +18,7 @@ export const getAllCategoryService = async (): Promise<Category[]> => {
     try {
         const query = await client.query(sql)
         if (!query.rowCount) {
-            throw new Error("category data not found")
+            throw new CustomError("Category not found", 404)
         }
 
         return query.rows
@@ -43,7 +43,7 @@ export const getCategoryByIdService = async (id: string): Promise<Category> => {
     try {
         const query = await client.query(sql, [id])
         if (!query.rowCount) {
-            throw new Error(`category id ${id} doesn't existed`)
+            throw new CustomError(`Category id ${id} not found`, 404)
         }
         return query.rows[0]
     } catch (error) {
@@ -60,7 +60,7 @@ export const createCategoryService = async (category: {
         const sql = "INSERT INTO categories (name,detail) VALUES ($1, $2)"
         const query = await client.query(sql, [name, detail])
         if (!query.rowCount) {
-            throw new Error("failed to create new category")
+            throw new Error("Failed to create new category")
         }
     } catch (error) {
         throw error
@@ -78,7 +78,7 @@ export const updateCategoryService = async (
         const sql = "update categories set name = $2, detail = $3 where id = $1"
         const query = await client.query(sql, [id, name, detail])
         if (!query.rowCount) {
-            throw new Error(`failed to update category id ${id}`)
+            throw new Error(`Failed to update category id ${id}`)
         }
         return
     } catch (error) {

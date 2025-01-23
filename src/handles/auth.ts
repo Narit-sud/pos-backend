@@ -4,6 +4,7 @@ import { Token } from "../utils/token"
 import { getUserByUsernameService } from "../services/user"
 import { validateNewUser } from "../utils/validateNewUser"
 import { loginService, registerService } from "../services/auth"
+import { CustomError } from "../class/CustomError"
 
 export const loginHandle = async (
     req: Request,
@@ -23,17 +24,13 @@ export const loginHandle = async (
             })
             .send(new TrueResponse("login success"))
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("not found")) {
-                res.status(404).send(new FalseResponse(error.message))
-                return
-            } else if (error.message.includes("wrong password")) {
-                res.status(400).send(new FalseResponse(error.message))
-                return
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
+            return
         }
-        res.status(500).send(new FalseResponse("unexpected error", error))
-        return
     }
 }
 
@@ -43,30 +40,17 @@ export const registerHandle = async (
 ): Promise<void> => {
     const newUser = req.body
     try {
-        const isUserValid = validateNewUser(newUser)
-        if (isUserValid) {
-            await registerService(newUser)
-            res.status(201).send(new TrueResponse("create new user success"))
-            return
-        }
+        validateNewUser(newUser)
+        await registerService(newUser)
+        res.status(201).send(new TrueResponse("Create new user success"))
+        return
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("unique_username")) {
-                res.status(400).send(
-                    new FalseResponse("this username already taken"),
-                )
-            } else if (error.message.includes("unique_email")) {
-                res.status(400).send(
-                    new FalseResponse("this email already taken"),
-                )
-            } else if (error.message.includes("unique_full_name")) {
-                res.status(400).send(
-                    new FalseResponse("this pereson already has an account"),
-                )
-            } else {
-                res.status(500).send(new FalseResponse(error.message, error))
-                return
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
+            return
         }
     }
 }
@@ -83,14 +67,17 @@ export const reloginHandle = async (
         const userData = await getUserByUsernameService(decode.username)
         res.status(200).send(
             new TrueResponse(
-                `relogin: get auth of user ${decode.username} success`,
+                `Relogin: get auth of user ${decode.username} success`,
                 userData,
             ),
         )
         return
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(404).send(new FalseResponse(error.message))
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
             return
         }
     }

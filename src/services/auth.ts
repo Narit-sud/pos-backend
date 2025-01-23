@@ -2,6 +2,7 @@ import { pool } from "../utils/pool"
 import { comparePassword, encryptPassword } from "../utils/encrypt"
 import { User } from "../types/User"
 import { LoginDetail } from "../interfaces/LoginDetail"
+import { CustomError } from "../class/CustomError"
 
 export const registerService = async (user: User): Promise<void> => {
     const { name, surname, email, phone_number, username, password } = user
@@ -25,7 +26,7 @@ export const registerService = async (user: User): Promise<void> => {
         ])
 
         if (!query.rowCount) {
-            throw new Error("create new user failed")
+            throw new CustomError("Create new user failed", 400)
         }
     } catch (error) {
         throw error
@@ -41,7 +42,7 @@ export const loginService = async (loginDetail: LoginDetail): Promise<void> => {
         const query = await client.query(sql, [loginDetail.username])
         // check query result
         if (!query.rowCount) {
-            throw new Error("user not found")
+            throw new CustomError("User not found", 404)
         }
         // compare password
         const stringPassword = loginDetail.password
@@ -52,7 +53,7 @@ export const loginService = async (loginDetail: LoginDetail): Promise<void> => {
         )
         // if password doesn't matched
         if (!isPasswordMatched) {
-            throw new Error("wrong password")
+            throw new CustomError("Wrong password", 401)
         }
     } catch (error) {
         throw error

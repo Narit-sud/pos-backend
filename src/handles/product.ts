@@ -9,6 +9,7 @@ import {
 } from "../services/product"
 import { Product } from "../interfaces/Product"
 import { validateNewProduct } from "../utils/validateNewProduct"
+import { CustomError } from "../class/CustomError"
 
 export const getAllProductHandle = async (
     req: Request,
@@ -17,21 +18,15 @@ export const getAllProductHandle = async (
     try {
         const products = await getAllProducts()
         res.status(200).send(
-            new TrueResponse("get products data success", products),
+            new TrueResponse("Get products data success", products),
         )
         return
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("not found")) {
-                res.status(404).send(new FalseResponse(error.message))
-                return
-            } else {
-                res.status(400).send(
-                    new FalseResponse("fetch failed", error.message),
-                )
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
         } else {
-            res.status(404).send(new FalseResponse("unexpected error", error))
+            res.status(500).send(new FalseResponse("Unexpected error", error))
             return
         }
     }
@@ -45,25 +40,17 @@ export const getProductByIdHandle = async (
 
     try {
         const product = (await getProductById(id)) as Product
-        if (!product) {
-            res.status(404).send(new FalseResponse("product not found"))
-            return
-        }
-
         res.status(200).send(
-            new TrueResponse<Product>(`get product id ${id} success`, product),
+            new TrueResponse<Product>(`Get product id ${id} success`, product),
         )
         return
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("not found")) {
-                res.status(404).send(new FalseResponse(error.message))
-                return
-            } else {
-                res.status(500).send(
-                    new FalseResponse("unexpected error", error),
-                )
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
+            return
         }
     }
 }
@@ -76,19 +63,14 @@ export const createProductHandle = async (
     try {
         validateNewProduct(newProduct)
         await createProduct(newProduct)
-        res.status(201).send(new TrueResponse("create new product success"))
+        res.status(201).send(new TrueResponse("Create new product success"))
         return
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("empty")) {
-                res.status(400).send(new FalseResponse(error.message))
-                return
-            } else {
-                res.status(400).send(new FalseResponse(error.message))
-                return
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
         } else {
-            res.status(500).send(new FalseResponse("unexpected error"))
+            res.status(500).send(new FalseResponse("Unexpected error", error))
             return
         }
     }
@@ -105,8 +87,11 @@ export const updateProductHandle = async (
             new TrueResponse(`update product id ${updatedProduct.id} success`),
         )
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).send(new FalseResponse(error.message))
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
             return
         }
     }
@@ -123,16 +108,12 @@ export const deleteProductHandle = async (
             new TrueResponse(`delete product id ${id} success`),
         )
     } catch (error) {
-        if (error instanceof Error) {
-            if (error.message.includes("existed")) {
-                res.status(404).send(new FalseResponse(error.message))
-                return
-            } else {
-                res.status(500).send(
-                    new FalseResponse("unexpected error", error),
-                )
-                return
-            }
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+            return
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
+            return
         }
     }
 }

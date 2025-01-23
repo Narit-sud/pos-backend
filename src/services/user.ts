@@ -1,5 +1,6 @@
 import { pool } from "../utils/pool"
 import { User } from "../types/User"
+import { CustomError } from "../class/CustomError"
 
 export const getAllUserService = async (): Promise<User[]> => {
     const client = await pool.connect()
@@ -21,11 +22,10 @@ export const getAllUserService = async (): Promise<User[]> => {
                 roles.id = employees.role_id`
     try {
         const query = await client.query(sql)
-        if (query.rowCount) {
-            return query.rows
-        } else {
-            throw new Error("no user data found")
+        if (!query.rowCount) {
+            throw new CustomError("User data not found", 404)
         }
+        return query.rows
     } catch (error) {
         throw error
     } finally {
@@ -53,11 +53,10 @@ export const getUserByUsernameService = async (
             WHERE employees.username= $1`
     try {
         const query = await client.query(sql, [username])
-        if (query.rowCount && query.rowCount > 0) {
-            return query.rows[0]
-        } else {
-            throw new Error("user not found")
+        if (!query.rowCount) {
+            throw new CustomError(`User ${username} not found`, 404)
         }
+        return query.rows[0]
     } catch (error) {
         throw error
     } finally {

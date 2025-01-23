@@ -5,6 +5,7 @@ import {
     updateUserService,
 } from "../services/user"
 import { TrueResponse, FalseResponse } from "../class/Response"
+import { CustomError } from "../class/CustomError"
 
 export const getAllUserHandle = async (
     req: Request,
@@ -19,8 +20,10 @@ export const getAllUserHandle = async (
         res.status(200).send(new TrueResponse("get users data success", users))
         return
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(500).send(new FalseResponse(error.message))
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
         }
     }
 }
@@ -39,14 +42,16 @@ export const getUserByUsernameHandle = async (
 
         res.status(200).send(
             new TrueResponse(
-                `get user from username: ${username} success`,
+                `Get user from username: ${username} success`,
                 user,
             ),
         )
         return
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(500).send(new FalseResponse(error.message))
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
         }
     }
 }
@@ -59,12 +64,13 @@ export const updateUserHandle = async (
     const updatedUser = await req.body
 
     try {
-        await updateUserService({ id, ...updatedUser })
-        const response = new TrueResponse("success updated user data")
-        res.status(200).send(response)
+        updateUserService({ id, ...updatedUser })
+        res.status(200).send(new TrueResponse(`Update user id ${id} success`))
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).send(new FalseResponse(error.message))
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message))
+        } else {
+            res.status(500).send(new FalseResponse("Unexpected error", error))
         }
     }
 }
