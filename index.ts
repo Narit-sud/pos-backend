@@ -2,18 +2,30 @@ import "dotenv/config"
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-import { UserRouter } from "./src/routers/user"
-import { CategoryRouter } from "./src/routers/category"
-import { ProductRouter } from "./src/routers/product"
-import { pool } from "./src/utils/pool"
-import { AuthRouter } from "./src/routers/auth"
-import { TestingRouter } from "./src/routers/testing"
-import { verifyToken } from "./src/middlewares/verifyToken"
+import { UserRouter } from "./src/user/route"
+import { CategoryRouter } from "./src/category/route"
+import { ProductRouter } from "./src/product/route"
+import { pool } from "./src/_utils/pool"
+import { AuthRouter } from "./src/auth/route"
+import { TestingRouter } from "./src/testing/route"
+import { verifyToken } from "./src/_middlewares/verifyToken"
+import { productMainRouter } from "./src/_routers/productMain"
+import { productVariantRouter } from "./src/_routers/productVariant"
+import { productCategoryRouter } from "./src/_routers/productCategory"
 
 const app = express()
 
 app.use(express.json())
-app.use(cors({ origin: "http://localhost:5173", credentials: true }))
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "http://192.168.1.64:5173",
+            "http://localhost:3000",
+        ],
+        credentials: true,
+    }),
+)
 app.use(cookieParser())
 
 // partial public api
@@ -23,6 +35,9 @@ app.use("/auth", AuthRouter)
 app.use("/user", verifyToken, UserRouter)
 app.use("/category", verifyToken, CategoryRouter)
 app.use("/product", verifyToken, ProductRouter)
+app.use("/productMain", verifyToken, productMainRouter)
+app.use("/productVariant", verifyToken, productVariantRouter)
+app.use("/productCategory", verifyToken, productCategoryRouter)
 
 // testing api
 app.use("/testing", TestingRouter)
