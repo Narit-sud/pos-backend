@@ -1,119 +1,159 @@
-import { Request, Response } from "express"
+import { Request, Response } from "express";
 import {
     getAllProducts,
     getProductById,
     createProduct,
     updateProduct,
     deleteProduct,
-} from "./service"
-import { validateNewProduct } from "./validateNewProduct"
-import { CustomError } from "../_class/CustomError"
-import { FalseResponse, TrueResponse } from "../_class/Response"
-import { Product } from "../_interfaces/Product"
+    getMainService,
+    getVariantService,
+} from "./service";
+import { validateNewProduct } from "./validateNewProduct";
+import { CustomError } from "../_class/CustomError";
+import { FalseResponse, TrueResponse } from "../_class/Response";
+import { Product } from "../_interfaces/Product";
 
 export const getAllProductHandle = async (
     req: Request,
     res: Response,
 ): Promise<void> => {
     try {
-        const products = await getAllProducts()
+        const products = await getAllProducts();
         res.status(200).send(
             new TrueResponse("Get products data success", products),
-        )
-        return
+        );
+        return;
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message))
-            return
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error))
-            return
+            res.status(500).send(new FalseResponse("Unexpected error", error));
+            return;
         }
     }
-}
+};
 
 export const getProductByIdHandle = async (
     req: Request,
     res: Response,
 ): Promise<void> => {
-    const { id } = req.params
+    const { id } = req.params;
 
     try {
-        const product = (await getProductById(id)) as Product
+        const product = (await getProductById(id)) as Product;
         res.status(200).send(
             new TrueResponse<Product>(`Get product id ${id} success`, product),
-        )
-        return
+        );
+        return;
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message))
-            return
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error))
-            return
+            res.status(500).send(new FalseResponse("Unexpected error", error));
+            return;
         }
     }
-}
+};
 
 export const createProductHandle = async (
     req: Request,
     res: Response,
 ): Promise<void> => {
-    const newProduct = req.body
+    const newProduct = req.body;
     try {
-        validateNewProduct(newProduct)
-        await createProduct(newProduct)
-        res.status(201).send(new TrueResponse("Create new product success"))
-        return
+        validateNewProduct(newProduct);
+        await createProduct(newProduct);
+        res.status(201).send(new TrueResponse("Create new product success"));
+        return;
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message))
-            return
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error))
-            return
+            res.status(500).send(new FalseResponse("Unexpected error", error));
+            return;
         }
     }
-}
+};
 
 export const updateProductHandle = async (
     req: Request,
     res: Response,
 ): Promise<void> => {
-    const updatedProduct = req.body
+    const updatedProduct = req.body;
     try {
-        await updateProduct(updatedProduct)
+        await updateProduct(updatedProduct);
         res.status(200).send(
             new TrueResponse(`update product id ${updatedProduct.id} success`),
-        )
+        );
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message))
-            return
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error))
-            return
+            res.status(500).send(new FalseResponse("Unexpected error", error));
+            return;
         }
     }
-}
+};
 
 export const deleteProductHandle = async (
     req: Request,
     res: Response,
 ): Promise<void> => {
-    const { id } = req.params
+    const { id } = req.params;
     try {
-        await deleteProduct(id)
+        await deleteProduct(id);
         res.status(200).send(
             new TrueResponse(`delete product id ${id} success`),
-        )
+        );
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message))
-            return
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error))
-            return
+            res.status(500).send(new FalseResponse("Unexpected error", error));
+            return;
         }
     }
-}
+};
+
+export const getMainsHandle = async (req: Request, res: Response) => {
+    try {
+        const result = await getMainService();
+        res.status(result.code).send(
+            new TrueResponse(result.message, result.data),
+        );
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
+        } else {
+            console.log(error);
+
+            res.status(500).send(new FalseResponse("Unexpected Error", error));
+            return;
+        }
+    }
+};
+
+export const getVariantsHandle = async (req: Request, res: Response) => {
+    try {
+        const result = await getVariantService();
+        res.status(result.code).send(
+            new TrueResponse(result.message, result.data),
+        );
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new FalseResponse(error.message));
+            return;
+        } else {
+            console.log(error);
+
+            res.status(500).send(new FalseResponse("Unexpected Error", error));
+            return;
+        }
+    }
+};

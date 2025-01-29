@@ -1,16 +1,21 @@
-import { Router } from "express"
+import { Router } from "express";
 import {
     getAllProductHandle,
     getProductByIdHandle,
     createProductHandle,
     updateProductHandle,
     deleteProductHandle,
-} from "./handle"
+    getMainsHandle,
+    getVariantsHandle,
+} from "./handle";
 
-export const ProductRouter = Router()
+export const productRouter = Router();
 
-ProductRouter.get("/", getAllProductHandle)
-ProductRouter.get("/:id", getProductByIdHandle)
-ProductRouter.post("/", createProductHandle)
-ProductRouter.patch("/:id", updateProductHandle)
-ProductRouter.delete("/:id", deleteProductHandle)
+productRouter.get("/main", getMainsHandle);
+productRouter.get("/variant", getVariantsHandle);
+
+productRouter.get("/", getAllProductHandle);
+productRouter.get("/:id", getProductByIdHandle);
+productRouter.post("/", createProductHandle);
+productRouter.patch("/:id", updateProductHandle);
+productRouter.delete("/:id", deleteProductHandle);
