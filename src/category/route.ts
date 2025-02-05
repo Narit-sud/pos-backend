@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { getCategoriesHandle } from "./handle";
+import { getCategoriesHandle, createCategoryHandle } from "./handle";
 
-export const CategoryRouter = Router();
+export const categoryRouter = Router();
 
-CategoryRouter.get("/", getCategoriesHandle);
+categoryRouter.get("/", getCategoriesHandle);
+categoryRouter.post("/", createCategoryHandle);
 // CategoryRouter.get("/:id", getCategoryByIdHandle);
 // CategoryRouter.post("/", createCategoryHandle);
 // CategoryRouter.delete("/:id", deleteCategoryHandle);

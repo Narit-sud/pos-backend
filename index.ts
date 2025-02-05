@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { UserRouter } from "./src/user/route";
-import { CategoryRouter } from "./src/category/route";
+import { categoryRouter } from "./src/category/route";
 import { productRouter } from "./src/product/route";
 import { pool } from "./src/_utils/pool";
 import { AuthRouter } from "./src/auth/route";
@@ -33,7 +33,7 @@ app.use("/auth", AuthRouter);
 
 // private api
 app.use("/user", verifyToken, UserRouter);
-app.use("/category", verifyToken, CategoryRouter);
+app.use("/category", verifyToken, categoryRouter);
 app.use("/product", verifyToken, productRouter);
 app.use("/productMain", verifyToken, productMainRouter);
 app.use("/productVariant", verifyToken, productVariantRouter);

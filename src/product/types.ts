@@ -4,6 +4,7 @@ export type ProductMain = {
     name: string;
     category: string;
     detail: string;
+    type: string;
     variantCount: number;
     createdAt: string;
     updatedAt: string;
@@ -22,4 +23,11 @@ export type ProductVariant = {
     cost: number;
     price: number;
     detail: string;
+    mainProduct: string;
+    createdAt?: string;
+    updatedAt?: string;
 };
+
+export interface FullProduct extends ProductMain {
+    variants: ProductVariant[];
+}

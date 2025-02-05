@@ -1,9 +1,9 @@
 import { pool } from "../_utils/pool";
-import { Category } from "../_interfaces/Category";
+import type { Category } from "./types";
 import { CustomError } from "../_class/CustomError";
 import { QueryResult } from "../_class/QueryResult";
 
-export async function getCategoryService(): Promise<QueryResult<Category[]>> {
+export async function getCategoriesService(): Promise<QueryResult<Category[]>> {
     const sql = `
         SELECT
             "index",
@@ -22,6 +22,29 @@ export async function getCategoryService(): Promise<QueryResult<Category[]>> {
             throw new CustomError("Category data not found", 404);
         }
         return new QueryResult("Get category data success", 200, query.rows);
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function createCategoryService(
+    newCategory: Category,
+): Promise<QueryResult<never>> {
+    const { uuid, name, detail } = newCategory;
+    const sql = `
+        INSERT
+        INTO
+            product_category
+            (uuid, name, detail)
+        VALUES
+            ($1, $2, $3);
+`;
+    try {
+        const query = await pool.query(sql, [uuid, name, detail]);
+        if (!query.rowCount) {
+            throw new CustomError("Create new category failed", 400);
+        }
+        return new QueryResult("Create new category success", 201);
     } catch (error) {
         throw error;
     }

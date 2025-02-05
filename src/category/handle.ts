@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { getCategoryService } from "./service";
+import { getCategoriesService, createCategoryService } from "./service";
 import { validateNewCategory } from "./validateNewCategory";
-import { TrueResponse, FalseResponse } from "../_class/Response";
+import { TrueResponse, FalseResponse, ApiResponse } from "../_class/Response";
 import { CustomError } from "../_class/CustomError";
 
 export async function getCategoriesHandle(
@@ -9,17 +9,42 @@ export async function getCategoriesHandle(
     res: Response,
 ): Promise<void> {
     try {
-        const result = await getCategoryService();
+        const result = await getCategoriesService();
         res.status(result.code).send(
-            new TrueResponse(result.message, result.data),
+            new ApiResponse(true, result.message, result.data, undefined),
         );
     } catch (error) {
         if (error instanceof CustomError) {
-            res.status(error.code).send(new FalseResponse(error.message));
+            res.status(error.code).send(
+                new ApiResponse(true, error.message, undefined, error),
+            );
             return;
         } else {
-            res.status(500).send(new FalseResponse("Unexpected error", error));
+            res.status(500).send(
+                new ApiResponse(false, "Unexpected Error", undefined, error),
+            );
             return;
+        }
+    }
+}
+
+export async function createCategoryHandle(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const newCategory = req.body;
+
+    try {
+        validateNewCategory(newCategory);
+        const result = await createCategoryService(newCategory);
+        res.status(result.code).send(new ApiResponse(true, result.message));
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(new ApiResponse(false, error.message));
+        } else {
+            res.status(500).send(
+                new ApiResponse(false, "Unexpected Error", undefined, error),
+            );
         }
     }
 }
