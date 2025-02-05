@@ -4,7 +4,6 @@ export type ProductMain = {
     name: string;
     category: string;
     detail: string;
-    type: string;
     variantCount: number;
     createdAt: string;
     updatedAt: string;

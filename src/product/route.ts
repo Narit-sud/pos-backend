@@ -1,31 +1,29 @@
 import { Router } from "express";
 import {
-    getAllProductHandle,
-    getProductByIdHandle,
-    createProductHandle,
-    updateProductHandle,
-    deleteProductHandle,
+    createNewProductHandle,
     getMainsHandle,
     getVariantsHandle,
-    createMainHandle,
     createVariantsHandle,
-    createBothHandle,
     deleteMainHandle,
 } from "./handle";
 
 export const productRouter = Router();
 
+// create new product
+productRouter.post("/", createNewProductHandle);
+
+// get all main products
 productRouter.get("/main", getMainsHandle);
-productRouter.post("/main", createMainHandle);
+//get a main product by uuid
+//TODO: new route not sure is this necessary?
+
+// delete main product by uuid
 productRouter.delete("/main/:uuid", deleteMainHandle);
 
-productRouter.post("/full", createBothHandle);
-
+// get all variant products
 productRouter.get("/variant", getVariantsHandle);
-productRouter.post("/variant", createVariantsHandle);
+// get a variant by uuid
+// TODO: new route not sure is this necessary?
 
-productRouter.get("/", getAllProductHandle);
-productRouter.get("/:id", getProductByIdHandle);
-productRouter.post("/", createProductHandle);
-productRouter.patch("/:id", updateProductHandle);
-productRouter.delete("/:id", deleteProductHandle);
+// create variant products
+productRouter.post("/variant", createVariantsHandle);

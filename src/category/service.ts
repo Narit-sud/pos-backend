@@ -2,7 +2,6 @@ import { pool } from "../_utils/pool";
 import type { Category } from "./types";
 import { CustomError } from "../_class/CustomError";
 import { QueryResult } from "../_class/QueryResult";
-import { Query } from "mysql2";
 
 export async function getCategoriesService(): Promise<QueryResult<Category[]>> {
     const sql = `
@@ -16,13 +15,47 @@ export async function getCategoriesService(): Promise<QueryResult<Category[]>> {
             product_category
         WHERE
             status = 'active'
-            ORDER BY "index";`;
+        ORDER BY "index";`;
     try {
         const query = await pool.query(sql);
         if (!query.rowCount) {
             throw new CustomError("Category data not found", 404);
         }
         return new QueryResult("Get category data success", 200, query.rows);
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function getCategoryByUUIDService(
+    uuid: string,
+): Promise<QueryResult<Category>> {
+    const sql = `
+        SELECT
+            "index",
+            "uuid",
+            "name",
+            created_at AS "createdAt",
+            updated_at AS "updatedAt"
+        FROM
+            product_category
+        WHERE
+            status = 'active'
+        AND
+            uuid = $1`;
+    try {
+        const query = await pool.query(sql, [uuid]);
+        if (!query.rowCount) {
+            throw new CustomError(
+                `Category with uuid = ${uuid} not found`,
+                404,
+            );
+        }
+        return new QueryResult<Category>(
+            `Get category with uuid = ${uuid} success`,
+            200,
+            query.rows[0],
+        );
     } catch (error) {
         throw error;
     }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
     getCategoriesService,
+    getCategoryByUUIDService,
     createCategoryService,
     deleteCategoryService,
 } from "./service";
@@ -16,6 +17,31 @@ export async function getCategoriesHandle(
         const result = await getCategoriesService();
         res.status(result.code).send(
             new ApiResponse(true, result.message, result.data, undefined),
+        );
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(
+                new ApiResponse(true, error.message, undefined, error),
+            );
+            return;
+        } else {
+            res.status(500).send(
+                new ApiResponse(false, "Unexpected Error", undefined, error),
+            );
+            return;
+        }
+    }
+}
+
+export async function getCategoryByUUID(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const { uuid } = req.params;
+    try {
+        const result = await getCategoryByUUIDService(uuid);
+        res.status(result.code).send(
+            new ApiResponse(true, result.message, result.data),
         );
     } catch (error) {
         if (error instanceof CustomError) {
