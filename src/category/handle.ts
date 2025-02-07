@@ -1,20 +1,19 @@
 import { Request, Response } from "express";
 import {
-    getCategoriesService,
-    getCategoryByUUIDService,
-    createCategoryService,
-    deleteCategoryService,
+    getAll,
+    getByUUID,
+    createNew,
+    deleteByUUID,
+    updateByUUID,
 } from "./service";
 import { validateNewCategory } from "./validateNewCategory";
-import { TrueResponse, FalseResponse, ApiResponse } from "../_class/Response";
+import { ApiResponse } from "../_class/Response";
 import { CustomError } from "../_class/CustomError";
+import { CategoryType } from "./types";
 
-export async function getCategoriesHandle(
-    req: Request,
-    res: Response,
-): Promise<void> {
+export async function getAllHandle(req: Request, res: Response): Promise<void> {
     try {
-        const result = await getCategoriesService();
+        const result = await getAll();
         res.status(result.code).send(
             new ApiResponse(true, result.message, result.data, undefined),
         );
@@ -33,13 +32,13 @@ export async function getCategoriesHandle(
     }
 }
 
-export async function getCategoryByUUID(
+export async function getByUUIDHandle(
     req: Request,
     res: Response,
 ): Promise<void> {
     const { uuid } = req.params;
     try {
-        const result = await getCategoryByUUIDService(uuid);
+        const result = await getByUUID(uuid);
         res.status(result.code).send(
             new ApiResponse(true, result.message, result.data),
         );
@@ -58,7 +57,30 @@ export async function getCategoryByUUID(
     }
 }
 
-export async function createCategoryHandle(
+export async function updateByUUIDHandle(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const updatedCategory = req.body as CategoryType;
+    try {
+        const result = await updateByUUID(updatedCategory);
+        res.status(result.code).send(new ApiResponse(true, result.message));
+    } catch (error) {
+        if (error instanceof CustomError) {
+            res.status(error.code).send(
+                new ApiResponse(true, error.message, undefined, error),
+            );
+            return;
+        } else {
+            res.status(500).send(
+                new ApiResponse(false, "Unexpected Error", undefined, error),
+            );
+            return;
+        }
+    }
+}
+
+export async function createNewHandle(
     req: Request,
     res: Response,
 ): Promise<void> {
@@ -66,7 +88,7 @@ export async function createCategoryHandle(
 
     try {
         validateNewCategory(newCategory);
-        const result = await createCategoryService(newCategory);
+        const result = await createNew(newCategory);
         res.status(result.code).send(new ApiResponse(true, result.message));
     } catch (error) {
         if (error instanceof CustomError) {
@@ -85,7 +107,7 @@ export async function deleteCategoryHandle(
 ): Promise<void> {
     const { uuid } = req.params;
     try {
-        const result = await deleteCategoryService(uuid);
+        const result = await deleteByUUID(uuid);
         res.status(result.code).send(new ApiResponse(true, result.message));
     } catch (error) {
         if (error instanceof CustomError) {

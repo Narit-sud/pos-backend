@@ -1,29 +1,25 @@
 import { Router } from "express";
+import { createFullHandle, deleteFullHandle } from "./handles/full";
+import { getMainsHandle, updateMainHandle } from "./handles/main";
 import {
-    createNewProductHandle,
-    getMainsHandle,
-    getVariantsHandle,
     createVariantsHandle,
-    deleteMainHandle,
-} from "./handle";
+    deleteVariantsHandle,
+    getVariantsHandle,
+    updateVariantsHandle,
+} from "./handles/variant";
 
 export const productRouter = Router();
 
-// create new product
-productRouter.post("/", createNewProductHandle);
+// full product route
+productRouter.post("/", createFullHandle); // create main and variants
+productRouter.delete("/:uuid", deleteFullHandle); // delete main and variants
 
-// get all main products
-productRouter.get("/main", getMainsHandle);
-//get a main product by uuid
-//TODO: new route not sure is this necessary?
+// main product route
+productRouter.get("/main", getMainsHandle); // get all
+productRouter.put("/main/:uuid", updateMainHandle); // update
 
-// delete main product by uuid
-productRouter.delete("/main/:uuid", deleteMainHandle);
-
-// get all variant products
-productRouter.get("/variant", getVariantsHandle);
-// get a variant by uuid
-// TODO: new route not sure is this necessary?
-
-// create variant products
-productRouter.post("/variant", createVariantsHandle);
+// variant product route
+productRouter.get("/variant", getVariantsHandle); // get all
+productRouter.post("/variant", createVariantsHandle); // create
+productRouter.put("/variant", updateVariantsHandle); // update
+productRouter.patch("/variant", deleteVariantsHandle); // delete

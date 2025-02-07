@@ -1,4 +1,4 @@
-export type ProductMain = {
+export type MainProductType = {
     index: number;
     uuid: string;
     name: string;
@@ -7,15 +7,10 @@ export type ProductMain = {
     variantCount: number;
     createdAt: string;
     updatedAt: string;
-};
-export type ProductMainCreate = {
-    name: string;
-    category: string;
-    detail: string;
-    type: string;
+    status: string;
 };
 
-export type ProductVariant = {
+export type VariantProductType = {
     index: number;
     uuid: string;
     name: string;
@@ -27,6 +22,6 @@ export type ProductVariant = {
     updatedAt?: string;
 };
 
-export interface FullProduct extends ProductMain {
-    variants: ProductVariant[];
+export interface FullProductType extends MainProductType {
+    variants: VariantProductType[];
 }

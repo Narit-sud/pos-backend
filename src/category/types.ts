@@ -1,4 +1,4 @@
-export type Category = {
+export type CategoryType = {
     index: number;
     uuid: string;
     name: string;

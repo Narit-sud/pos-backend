@@ -1,9 +1,9 @@
 import { pool } from "../_utils/pool";
-import type { Category } from "./types";
+import type { CategoryType } from "./types";
 import { CustomError } from "../_class/CustomError";
 import { QueryResult } from "../_class/QueryResult";
 
-export async function getCategoriesService(): Promise<QueryResult<Category[]>> {
+export async function getAll(): Promise<QueryResult<CategoryType[]>> {
     const sql = `
         SELECT
             "index",
@@ -27,9 +27,9 @@ export async function getCategoriesService(): Promise<QueryResult<Category[]>> {
     }
 }
 
-export async function getCategoryByUUIDService(
+export async function getByUUID(
     uuid: string,
-): Promise<QueryResult<Category>> {
+): Promise<QueryResult<CategoryType>> {
     const sql = `
         SELECT
             "index",
@@ -51,7 +51,7 @@ export async function getCategoryByUUIDService(
                 404,
             );
         }
-        return new QueryResult<Category>(
+        return new QueryResult<CategoryType>(
             `Get category with uuid = ${uuid} success`,
             200,
             query.rows[0],
@@ -61,8 +61,8 @@ export async function getCategoryByUUIDService(
     }
 }
 
-export async function createCategoryService(
-    newCategory: Category,
+export async function createNew(
+    newCategory: CategoryType,
 ): Promise<QueryResult<never>> {
     const { uuid, name, detail } = newCategory;
     const sql = `
@@ -84,9 +84,7 @@ export async function createCategoryService(
     }
 }
 
-export async function deleteCategoryService(
-    uuid: string,
-): Promise<QueryResult<never>> {
+export async function deleteByUUID(uuid: string): Promise<QueryResult<never>> {
     const sql = `update product_category set status = 'delete' where uuid = $1`;
     try {
         const query = await pool.query(sql, [uuid]);
@@ -97,6 +95,31 @@ export async function deleteCategoryService(
             );
         }
         return new QueryResult(`Delete category uuid = ${uuid} success`, 200);
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function updateByUUID(
+    updatedCategory: CategoryType,
+): Promise<QueryResult> {
+    const sql = `update product_category set name = $1, detail = $2 where uuid = $3`;
+    try {
+        const query = await pool.query(sql, [
+            updatedCategory.name,
+            updatedCategory.detail,
+            updatedCategory.uuid,
+        ]);
+        if (!query.rowCount) {
+            throw new CustomError(
+                `Update category with UUID: ${updatedCategory.uuid} failed`,
+                400,
+            );
+        }
+        return new QueryResult(
+            `Update category with UUID: ${updatedCategory.uuid} success`,
+            200,
+        );
     } catch (error) {
         throw error;
     }

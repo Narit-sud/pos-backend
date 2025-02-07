@@ -1,18 +1,16 @@
 import { Router } from "express";
 import {
-    getCategoriesHandle,
-    getCategoryByUUID,
-    createCategoryHandle,
+    getAllHandle,
+    getByUUIDHandle,
+    createNewHandle,
     deleteCategoryHandle,
+    updateByUUIDHandle,
 } from "./handle";
 
 export const categoryRouter = Router();
 
-// get all categories
-categoryRouter.get("/", getCategoriesHandle);
-// get a category by uuid
-categoryRouter.get("/:uuid", getCategoryByUUID);
-// create new category
-categoryRouter.post("/", createCategoryHandle);
-// delete a category
-categoryRouter.delete("/:uuid", deleteCategoryHandle);
+categoryRouter.get("/", getAllHandle); // get all
+categoryRouter.get("/:uuid", getByUUIDHandle); // get by uuid
+categoryRouter.post("/", createNewHandle); // create
+categoryRouter.put("/:uuid", updateByUUIDHandle); // update
+categoryRouter.delete("/:uuid", deleteCategoryHandle); // delete
