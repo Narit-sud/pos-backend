@@ -1,6 +1,6 @@
 export type OrderType = {
     uuid: string;
-    customerId: string;
+    customerUUID: string;
     createdAt: string;
     updatedAt: string;
 };
