@@ -1,5 +1,5 @@
-import { Category } from "../_interfaces/Category";
-export const validateNewCategory = (category: Category): boolean => {
+import { CategoryType } from "./types";
+export const validateNewCategory = (category: CategoryType): boolean => {
     if (
         typeof category.name === "undefined" ||
         typeof category.detail === "undefined"

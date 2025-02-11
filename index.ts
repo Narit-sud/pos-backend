@@ -9,9 +9,9 @@ import { pool } from "./src/_utils/pool";
 import { AuthRouter } from "./src/auth/route";
 import { TestingRouter } from "./src/testing/route";
 import { verifyToken } from "./src/_middlewares/verifyToken";
-import { productMainRouter } from "./src/_routers/productMain";
-import { productVariantRouter } from "./src/_routers/productVariant";
-import { productCategoryRouter } from "./src/_routers/productCategory";
+import { customerRouter } from "./src/customer/route";
+import { orderRouter } from "./src/order/route";
+import { productLogRouter } from "./src/productLog/route";
 
 const app = express();
 
@@ -35,9 +35,9 @@ app.use("/auth", AuthRouter);
 app.use("/user", verifyToken, UserRouter);
 app.use("/category", verifyToken, categoryRouter);
 app.use("/product", verifyToken, productRouter);
-app.use("/productMain", verifyToken, productMainRouter);
-app.use("/productVariant", verifyToken, productVariantRouter);
-app.use("/productCategory", verifyToken, productCategoryRouter);
+app.use("/customer", verifyToken, customerRouter);
+app.use("/order", verifyToken, orderRouter);
+app.use("/productLog", verifyToken, productLogRouter);
 
 // testing api
 app.use("/testing", TestingRouter);

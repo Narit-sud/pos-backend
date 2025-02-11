@@ -1,5 +1,4 @@
 import { pool } from "../../_utils/pool";
-import { CustomError } from "../../_class/CustomError";
 import type {
     FullProductType,
     MainProductType,
@@ -74,7 +73,7 @@ export async function deleteFull(
 ): Promise<QueryResult<never>> {
     const client = await pool.connect();
     const delMainSql = `update product_main set status = 'delete' where uuid = $1`;
-    const delVariantsSql = `update product_variant set status = 'delete' wherer mainProduct = $1`;
+    const delVariantsSql = `update product_variant set status = 'delete' where product_main_uuid = $1`;
     try {
         await client.query("BEGIN");
         await client.query(delMainSql, [mainProductUUID]);
@@ -86,10 +85,7 @@ export async function deleteFull(
         );
     } catch (error) {
         await client.query("ROLLBACK");
-        return new QueryResult(
-            `Delete product main and variants binded with uuid: ${mainProductUUID} failed`,
-            400,
-        );
+        throw error;
     } finally {
         client.release();
     }
