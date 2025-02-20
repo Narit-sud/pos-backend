@@ -2,16 +2,17 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { UserRouter } from "./src/user/route";
-import { categoryRouter } from "./src/category/route";
-import { productRouter } from "./src/product/route";
-import { pool } from "./src/_utils/pool";
-import { AuthRouter } from "./src/auth/route";
-import { TestingRouter } from "./src/testing/route";
-import { verifyToken } from "./src/_middlewares/verifyToken";
-import { customerRouter } from "./src/customer/route";
-import { orderRouter } from "./src/order/route";
-import { productLogRouter } from "./src/productLog/route";
+import { UserRouter } from "./src/features/user/route";
+import { categoryRouter } from "./src/features/category/route";
+import { productRouter } from "./src/features/product/route";
+import { pool } from "./src/utils/pool";
+import { AuthRouter } from "./src/features/auth/route";
+import { TestingRouter } from "./src/features/testing/route";
+import { verifyToken } from "./src/middlewares/verifyToken";
+import { customerRouter } from "./src/features/customer/route";
+import { orderRouter } from "./src/features/order/route";
+import { productLogRouter } from "./src/features/productLog/route";
+import { SupplierRouter } from "./src/features/supplier/route";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(
             "http://localhost:3000",
         ],
         credentials: true,
-    }),
+    })
 );
 app.use(cookieParser());
 
@@ -38,6 +39,7 @@ app.use("/product", verifyToken, productRouter);
 app.use("/customer", verifyToken, customerRouter);
 app.use("/order", verifyToken, orderRouter);
 app.use("/productLog", verifyToken, productLogRouter);
+app.use("/supplier", verifyToken, SupplierRouter);
 
 // testing api
 app.use("/testing", TestingRouter);
