@@ -38,7 +38,7 @@ app.use("/category", verifyToken, categoryRouter);
 app.use("/product", verifyToken, productRouter);
 app.use("/customer", verifyToken, customerRouter);
 app.use("/order", verifyToken, orderRouter);
-app.use("/productLog", verifyToken, productLogRouter);
+app.use("/log", verifyToken, productLogRouter);
 app.use("/supplier", verifyToken, SupplierRouter);
 
 // testing api

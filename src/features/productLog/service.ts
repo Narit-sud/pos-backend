@@ -16,7 +16,7 @@ export async function getAllService(
         FROM
             public.product_log
         WHERE
-            procurement_uuid = null
+            procurement_uuid is null
         `;
     const procurementSql = `
         SELECT
@@ -28,7 +28,7 @@ export async function getAllService(
         FROM
             public.product_log
         WHERE
-            order_uuid = null
+            order_uuid is null
         `;
     try {
         const query = await pool.query(fromOrder ? orderSql : procurementSql);

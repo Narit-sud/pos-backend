@@ -1,10 +1,10 @@
-import { pool } from "../../utils/pool";
+import { client, pool } from "../../utils/pool";
 import { CustomError } from "../../class/CustomError";
 import { QueryResult } from "../../class/QueryResult";
 import { OrderType } from "./types";
 
 export async function getAll(): Promise<QueryResult<OrderType[]>> {
-    const sql = `select * from product_log;`;
+    const sql = `select * from public.order;`;
     try {
         const query = await pool.query(sql);
         if (!query.rowCount) {
@@ -17,18 +17,50 @@ export async function getAll(): Promise<QueryResult<OrderType[]>> {
 }
 
 export async function createService(newOrder: OrderType): Promise<QueryResult> {
-    const sql = `insert into "order" (uuid, customer_uuid) values ($1, $2)`;
+    const client = await pool.connect();
+    const orderSQL = `insert into "order" (uuid, customer_uuid) values ($1, $2)`;
+    const productLogSQL = `
+        INSERT
+        INTO
+            product_log
+        (
+            "uuid",
+            product_variant_uuid,
+            order_uuid,
+            quantity,
+            total_value,
+            created_at,
+            updated_at
+        )
+        VALUES(
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            now(),
+            now()
+        );
+`;
     try {
-        const query = await pool.query(sql, [
-            newOrder.uuid,
-            newOrder.customerUUID,
-        ]);
-        if (!query.rowCount) {
-            throw new CustomError("Failed to create new order", 400);
-        }
+        await client.query("BEGIN");
+        await client.query(orderSQL, [newOrder.uuid, newOrder.customerUUID]);
+        await Promise.all(
+            newOrder.saleItems.map((item) => {
+                client.query(productLogSQL, [
+                    item.uuid,
+                    item.variantUUID,
+                    item.receiptUUID,
+                    item.qty,
+                    item.total,
+                ]);
+            })
+        );
         return new QueryResult("Create new order success", 201);
     } catch (error) {
         throw error;
+    } finally {
+        client.release();
     }
 }
 export async function updateService(
