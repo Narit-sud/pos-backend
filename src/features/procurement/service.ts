@@ -2,7 +2,6 @@ import { CustomError } from "../../class/CustomError";
 import { pool } from "../../utils/pool";
 import { ProcurementType } from "./types";
 import { QueryResult } from "../../class/QueryResult";
-import { log } from "console";
 
 export async function getAllService(): Promise<QueryResult<ProcurementType[]>> {
     const procureSQL = `
@@ -32,12 +31,10 @@ export async function getAllService(): Promise<QueryResult<ProcurementType[]>> {
 `;
     try {
         const procureQuery = await pool.query(procureSQL);
-        console.log(procureQuery.rows);
         if (!procureQuery.rowCount) {
             throw new CustomError("No procurement data found", 404);
         }
         const logQuery = await pool.query(logSQL);
-        console.log(logQuery.rows);
         if (!logQuery.rowCount) {
             throw new CustomError("No product log data found", 404);
         }
@@ -56,5 +53,86 @@ export async function getAllService(): Promise<QueryResult<ProcurementType[]>> {
         );
     } catch (error) {
         throw error;
+    }
+}
+
+export async function createService(
+    newProcure: ProcurementType,
+): Promise<QueryResult> {
+    const client = await pool.connect();
+    const procureSQL = `
+        INSERT
+        INTO
+            procurement
+        (
+            "uuid",
+            supplier_uuid,
+            is_paid,
+            is_received,
+            bill_date,
+            created_at,
+            updated_at
+        )
+        VALUES
+        (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            now(),
+            now()
+        );
+`;
+    const logSQL = `
+        INSERT
+        INTO
+            product_log
+        (
+            "uuid",
+            product_variant_uuid,
+            procurement_uuid,
+            quantity,
+            total_value,
+            created_at,
+            updated_at
+        )
+        VALUES(
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            now(),
+            now()
+        );
+`;
+    try {
+        await client.query("BEGIN");
+        await client.query(procureSQL, [
+            newProcure.uuid,
+            newProcure.supplierUUID,
+            newProcure.isPaid,
+            newProcure.isReceived,
+            newProcure.billDate,
+        ]);
+        await Promise.all(
+            newProcure.procurementItems.map((item) => {
+                return client.query(logSQL, [
+                    item.uuid,
+                    item.variantUUID,
+                    newProcure.uuid,
+                    item.qty,
+                    item.totalValue,
+                ]);
+            }),
+        );
+        await client.query("COMMIT");
+        return new QueryResult("Create new order success", 201);
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+    } finally {
+        client.release();
     }
 }

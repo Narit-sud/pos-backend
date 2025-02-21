@@ -53,7 +53,7 @@ export async function getAll(): Promise<QueryResult<OrderType[]>> {
 export async function createService(newOrder: OrderType): Promise<QueryResult> {
     const client = await pool.connect();
     const orderSQL = `insert into "order" (uuid, customer_uuid) values ($1, $2)`;
-    const productLogSQL = `
+    const logSQL = `
         INSERT
         INTO
             product_log
@@ -81,7 +81,7 @@ export async function createService(newOrder: OrderType): Promise<QueryResult> {
         await client.query(orderSQL, [newOrder.uuid, newOrder.customerUUID]);
         await Promise.all(
             newOrder.saleItems.map((item) => {
-                client.query(productLogSQL, [
+                client.query(logSQL, [
                     item.uuid,
                     item.variantUUID,
                     item.receiptUUID,
@@ -90,8 +90,10 @@ export async function createService(newOrder: OrderType): Promise<QueryResult> {
                 ]);
             }),
         );
+        await client.query("COMMIT");
         return new QueryResult("Create new order success", 201);
     } catch (error) {
+        await client.query("ROLLBACK");
         throw error;
     } finally {
         client.release();

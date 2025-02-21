@@ -1,4 +1,5 @@
 import { ProductLogType } from "../productLog/types";
+
 export type ProcurementType = {
     uuid: string;
     supplierUUID: string;
