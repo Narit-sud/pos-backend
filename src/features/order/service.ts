@@ -2,15 +2,49 @@ import { client, pool } from "../../utils/pool";
 import { CustomError } from "../../class/CustomError";
 import { QueryResult } from "../../class/QueryResult";
 import { OrderType } from "./types";
+import { getAllService } from "../productLog/service";
 
 export async function getAll(): Promise<QueryResult<OrderType[]>> {
-    const sql = `select * from public.order;`;
+    const orderSQL = `
+        SELECT
+            "uuid",
+            "customer_uuid" as "customerUUID",
+            "created_at" as "createdAt",
+            "updated_at" as "updatedAt"
+        FROM
+            public.order
+`;
+
+    const logSQL = `
+        SELECT
+            "uuid",
+            product_variant_uuid as "variantUUID",
+            order_uuid as "orderUUID",
+            quantity as "qty",
+            total_value as "totalValue"
+        FROM
+            public.product_log
+        WHERE
+            procurement_uuid is null
+
+`;
     try {
-        const query = await pool.query(sql);
-        if (!query.rowCount) {
+        const orderQuery = await pool.query(orderSQL);
+        if (!orderQuery.rowCount) {
+            throw new CustomError("Order data not found", 404);
+        }
+        const logQuery = await pool.query(logSQL);
+        if (!logQuery.rowCount) {
             throw new CustomError("Product log data not found", 404);
         }
-        return new QueryResult("Get product log data success", 200, query.rows);
+        const orders = orderQuery.rows.map((row) => ({
+            ...row,
+            saleItems: logQuery.rows.filter(
+                (log) => log.orderUUID === row.uuid,
+            ),
+        })) as OrderType[];
+
+        return new QueryResult("Get product log data success", 200, orders);
     } catch (error) {
         throw error;
     }
@@ -54,7 +88,7 @@ export async function createService(newOrder: OrderType): Promise<QueryResult> {
                     item.qty,
                     item.total,
                 ]);
-            })
+            }),
         );
         return new QueryResult("Create new order success", 201);
     } catch (error) {
@@ -64,7 +98,7 @@ export async function createService(newOrder: OrderType): Promise<QueryResult> {
     }
 }
 export async function updateService(
-    updatedOrder: OrderType
+    updatedOrder: OrderType,
 ): Promise<QueryResult> {
     const sql = `update "order" set customer_uuid = $1, updated_at = now() where uuid = $2`;
     try {
@@ -75,12 +109,12 @@ export async function updateService(
         if (!query.rowCount) {
             throw new CustomError(
                 `Failed to update order uuid: ${updatedOrder.uuid}`,
-                400
+                400,
             );
         }
         return new QueryResult(
             `Update order uuid: ${updatedOrder.uuid} success`,
-            200
+            200,
         );
     } catch (error) {
         throw error;
@@ -93,7 +127,7 @@ export async function deleteService(orderUUID: string): Promise<QueryResult> {
         if (!query.rowCount) {
             throw new CustomError(
                 `Failed to delete order uuid: ${orderUUID}`,
-                400
+                400,
             );
         }
         return new QueryResult(`Delete order uuid: ${orderUUID} success`, 200);

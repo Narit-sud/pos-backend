@@ -1,4 +1,4 @@
-export interface CartItemType {
+export interface SaleItemType {
     uuid: string;
     mainUUID: string;
     mainName: string;
@@ -13,7 +13,7 @@ export interface CartItemType {
 export interface OrderType {
     uuid: string;
     customerUUID: string;
-    saleItems: CartItemType[];
+    saleItems: SaleItemType[];
     createdAt: string;
     updatedAt: string;
 }
