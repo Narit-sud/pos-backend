@@ -29,14 +29,14 @@ export async function getFull(): Promise<FullProductType[]> {
             'updatedAt', pv.updated_at,
             'status', pv.status
         )
-    ) FILTER (WHERE pv.uuid IS NOT NULL), '[]') AS "variants"
-FROM product_main pm
-LEFT JOIN product_variant pv 
-    ON pm.uuid = pv.product_main_uuid
-WHERE pm.status = 'active'
-  AND (pv.status IS NULL OR pv.status != 'delete') 
-GROUP BY pm.index, pm.uuid, pm.name, pm.product_category_uuid, pm.detail, pm.created_at, pm.updated_at, pm.status
-ORDER BY pm.index;`;
+        ) FILTER (WHERE pv.uuid IS NOT NULL), '[]') AS "variants"
+    FROM product_main pm
+    LEFT JOIN product_variant pv 
+        ON pm.uuid = pv.product_main_uuid
+    WHERE pm.status = 'active'
+    AND (pv.status IS NULL OR pv.status != 'delete') 
+    GROUP BY pm.index, pm.uuid, pm.name, pm.product_category_uuid, pm.detail, pm.created_at, pm.updated_at, pm.status
+    ORDER BY pm.index;`;
 
     try {
         const { rows } = await pool.query(sql);
@@ -65,13 +65,13 @@ ORDER BY pm.index;`;
                                 createdAt: v.createdAt,
                                 updatedAt: v.updatedAt,
                                 status: v.status,
-                            })
+                            }),
                         )
                         .sort(
                             (a: VariantProductType, b: VariantProductType) =>
-                                a.index - b.index
+                                a.index - b.index,
                         ), // Sort variants by index
-                } as FullProductType)
+                }) as FullProductType,
         );
     } catch (error) {
         throw error;
@@ -79,7 +79,7 @@ ORDER BY pm.index;`;
 }
 
 export async function createNew(
-    newProduct: FullProductType
+    newProduct: FullProductType,
 ): Promise<QueryResult<never>> {
     const createMainSql = `
         INSERT
@@ -118,7 +118,7 @@ export async function createNew(
                     variant.price,
                     variant.cost,
                 ]);
-            })
+            }),
         );
         // commit creation
         await client.query("COMMIT");
@@ -141,7 +141,7 @@ export async function createNew(
 }
 
 export async function deleteFull(
-    mainProductUUID: string
+    mainProductUUID: string,
 ): Promise<QueryResult<never>> {
     const client = await pool.connect();
     const delMainSql = `update product_main set status = 'delete' where uuid = $1`;
@@ -153,7 +153,7 @@ export async function deleteFull(
         await client.query("COMMIT");
         return new QueryResult(
             `Delete product main and variants binded with uuid: ${mainProductUUID} success`,
-            200
+            200,
         );
     } catch (error) {
         await client.query("ROLLBACK");

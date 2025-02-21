@@ -13,6 +13,7 @@ import { customerRouter } from "./src/features/customer/route";
 import { orderRouter } from "./src/features/order/route";
 import { productLogRouter } from "./src/features/productLog/route";
 import { SupplierRouter } from "./src/features/supplier/route";
+import { ProcurementRouter } from "./src/features/procurement/route";
 
 const app = express();
 
@@ -25,7 +26,7 @@ app.use(
             "http://localhost:3000",
         ],
         credentials: true,
-    })
+    }),
 );
 app.use(cookieParser());
 
@@ -40,6 +41,7 @@ app.use("/customer", verifyToken, customerRouter);
 app.use("/order", verifyToken, orderRouter);
 app.use("/log", verifyToken, productLogRouter);
 app.use("/supplier", verifyToken, SupplierRouter);
+app.use("/procurement", verifyToken, ProcurementRouter);
 
 // testing api
 app.use("/testing", TestingRouter);
