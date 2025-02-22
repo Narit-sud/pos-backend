@@ -2,15 +2,15 @@ import { Router } from "express";
 import {
     getAllHandle,
     getByUUIDHandle,
-    createNewHandle,
-    deleteCategoryHandle,
-    updateByUUIDHandle,
+    createHandle,
+    deleteHandle,
+    updateHandle,
 } from "./handle";
 
 export const categoryRouter = Router();
 
 categoryRouter.get("/", getAllHandle); // get all
 categoryRouter.get("/:uuid", getByUUIDHandle); // get by uuid
-categoryRouter.post("/", createNewHandle); // create
-categoryRouter.put("/:uuid", updateByUUIDHandle); // update
-categoryRouter.delete("/:uuid", deleteCategoryHandle); // delete
+categoryRouter.post("/", createHandle); // create
+categoryRouter.put("/:uuid", updateHandle); // update
+categoryRouter.delete("/:uuid", deleteHandle); // delete
