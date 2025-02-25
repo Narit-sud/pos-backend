@@ -162,3 +162,58 @@ export async function deleteFull(
         client.release();
     }
 }
+
+const fullWithStock = `SELECT 
+    pm.index AS "index",
+    pm.uuid AS "uuid",
+    pm.name AS "name",
+    pm.product_category_uuid AS "category",
+    pm.detail AS "detail",
+    pm.created_at AS "createdAt",
+    pm.updated_at AS "updatedAt",
+    pm.status AS "status",
+    COUNT(pv.uuid) AS "variantCount",
+    COALESCE(SUM(pl.adjusted_quantity), 0) AS stock,
+    json_agg(
+        jsonb_build_object(
+            'index', pv.index,
+            'uuid', pv.uuid,
+            'name', pv.name,
+            'cost', pv.cost,
+            'price', pv.price,
+            'detail', pv.detail,
+            'mainProduct', pm.uuid,
+            'createdAt', pv.created_at,
+            'updatedAt', pv.updated_at,
+            'status', pv.status,
+            'stock', COALESCE(variant_stock.stock, 0)
+        )
+    ) AS variants
+    FROM product_main pm
+    JOIN product_category pc ON pm.product_category_uuid = pc.uuid
+    LEFT JOIN product_variant pv ON pm.uuid = pv.product_main_uuid
+    LEFT JOIN (
+        SELECT 
+            product_variant_uuid, 
+            CASE 
+                WHEN procurement_uuid IS NULL THEN -quantity  -- Outgoing stock (sale)
+                WHEN order_uuid IS NULL THEN quantity        -- Incoming stock (purchase)
+                ELSE 0
+            END AS adjusted_quantity
+        FROM product_log
+    ) pl ON pv.uuid = pl.product_variant_uuid
+    LEFT JOIN (
+        SELECT 
+            product_variant_uuid, 
+            SUM(
+                CASE 
+                    WHEN procurement_uuid IS NULL THEN -quantity  -- Outgoing stock (sale)
+                    WHEN order_uuid IS NULL THEN quantity        -- Incoming stock (purchase)
+                    ELSE 0 
+                END
+            ) AS "stock"
+        FROM product_log
+        GROUP BY product_variant_uuid
+    ) variant_stock ON pv.uuid = variant_stock.product_variant_uuid
+    WHERE pv.status != 'delete'
+    GROUP BY pm.index, pm.uuid, pm.name, pc.name, pm.detail, pm.created_at, pm.updated_at, pm.status`;

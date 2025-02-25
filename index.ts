@@ -14,6 +14,7 @@ import { orderRouter } from "./src/features/order/route";
 import { productLogRouter } from "./src/features/productLog/route";
 import { SupplierRouter } from "./src/features/supplier/route";
 import { ProcurementRouter } from "./src/features/procurement/route";
+import { SortRouter } from "./src/features/sort/route";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/order", verifyToken, orderRouter);
 app.use("/log", verifyToken, productLogRouter);
 app.use("/supplier", verifyToken, SupplierRouter);
 app.use("/procurement", verifyToken, ProcurementRouter);
+app.use("/sort", verifyToken, SortRouter);
 
 // testing api
 app.use("/testing", TestingRouter);

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { getAllHandle } from "./handle";
+import { getAllHandle, createHandle } from "./handle";
 
 export const SupplierRouter = Router();
 
 SupplierRouter.get("/", getAllHandle);
+SupplierRouter.post("/", createHandle);

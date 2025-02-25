@@ -9,6 +9,7 @@ export async function getAllService(): Promise<QueryResult<CategoryType[]>> {
             "index",
             "uuid",
             "name",
+            "detail",
             created_at AS "createdAt",
             updated_at AS "updatedAt"
         FROM
@@ -35,6 +36,7 @@ export async function getByUUIDService(
             "index",
             "uuid",
             "name",
+            "detail",
             created_at AS "createdAt",
             updated_at AS "updatedAt"
         FROM
@@ -103,7 +105,7 @@ export async function deleteService(uuid: string): Promise<QueryResult<never>> {
 export async function updateService(
     updatedCategory: CategoryType,
 ): Promise<QueryResult> {
-    const sql = `update product_category set name = $1, detail = $2 where uuid = $3`;
+    const sql = `update product_category set name = $1, detail = $2, updated_at = now() where uuid = $3`;
     try {
         const query = await pool.query(sql, [
             updatedCategory.name,
